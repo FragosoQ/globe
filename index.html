@@ -1,726 +1,135 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Globo de Conexões (Deck.gl) - Rede de Países Selecionados</title>
-    <script src="https://unpkg.com/deck.gl@^9.0.0-beta.2/dist.min.js"></script>
+  <style> body { margin: 0; } </style>
 
-    <style type="text/css">
-        /* Estilos CSS Base (Otimizado para Mobile) */
-        body {
-            background: #000000;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-            /* Otimização de toque para evitar interferência do navegador (Permite zoom de pinça) */
-            touch-action: none; 
-            -ms-touch-action: none; 
-        }
+  <script type="importmap">{ "imports": {
+    "three": "https://esm.sh/three",
+    "three/": "https://esm.sh/three/"
+  }}</script>
 
-        #container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-        }
-
-        /* --- Logo Superior Esquerdo --- */
-        #logo-top-left {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 110;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 10px;
-            border-radius: 6px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        #logo-top-left img {
-            height: 60px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        /* --- Botões de Zoom (Escondidos por padrão) --- */
-        #zoom-controls {
-            display: none; 
-        }
-        
- /* 🛑 CARD DE INFORMAÇÃO: Canto Inferior Esquerdo (Configuração Desktop) */
-#info-wrapper {
-    position: absolute;
-    /* Posição em Desktop: Canto Inferior Esquerdo */
-    bottom: 20px; 
-    left: 20px; 
-    right: auto;
-    top: auto;
-    z-index: 100;
-    /* Permitir que o conteúdo defina a largura em desktop/tablet */
-    width: auto; 
-    max-width: 300px; /* Limite a largura para não ficar muito grande em desktops */
-    display: flex;
-    flex-direction: column-reverse; 
-    box-shadow: 0 0 15px rgba(15, 212, 247, 0.4); 
-    border-radius: 20px 20px 20px 20px; 
-}
-
-/* --- Mobile / Ecrãs Pequenos (max-width: 768px) --- */
-@media (max-width: 768px) {
-    #info-wrapper {
-        /* Centrar na parte inferior */
-        left: 50%;
-        right: auto;
-        bottom: 120px; 
-        /* Largura total com margem de 20px de cada lado */
-        width: calc(100% - 40px);
-        max-width: unset; /* Remove o limite */
-        transform: translateX(-50%); /* Centraliza horizontalmente */
-    }
-}
-        
-        #floating-info {
-            cursor: pointer; 
-            width: 100%; /* 🛑 Ocupa 100% dos 250px definidos no wrapper */
-            height: ; /* 🛑 Reduzida a altura para ser uma barra */
-            /*background-color: rgba(7, 7, 10, 0.8);*/
-            color: #FFFFFF; 
-            box-sizing: border-box;
-
-            display: flex; 
-            align-items: center;
-            justify-content: center; 
-            flex-direction: column; 
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-            /* BORDER-RADIUS CORRIGIDO: Arredondamento em baixo (topo da pilha) */
-            border-radius: 0 0 4px 4px; 
-            transition: all 0.3s ease-in-out;
-            gap: 15px;
-            padding: 5px;
-        }
-        #floating-info.active { 
-            box-shadow: 0 0 15px rgba(15, 212, 247, 0.4); 
-            border-radius: 40px 40px 40px 40px; 
-        }
-        #details-panel {
-            width: 100%; /* 🛑 Ocupa 100% dos 250px definidos no wrapper */
-            /*background-color: rgba(7, 7, 10, 0.9); */
-            color: #E0E0E0;
-        
-            border-bottom: none; 
-            padding: 0px; 
-            box-sizing: border-box; 
-            max-height: 0;
-            overflow: hidden; 
-            transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
-            border-radius: 4px 4px 0 0;
-        }
-        #details-panel.open { 
-            max-height: 500px; 
-            padding: 10px; 
-            border-radius: 4px 4px 0 0;
-        }
-
-        /* --- Card de Capital (TOOLTIP) --- */
-        #capital-tooltip {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.18);
-            color: white;
-            width: 200px;
-            height: 200px;
-            min-width: unset;
-            padding: 10px;
-            box-sizing: border-box;
-            border-radius: 6px;
-            pointer-events: none;
-            transition: opacity 0.2s, transform 0.2s;
-            opacity: 0;
-            font-size: 14px;
-            font-weight: 600;
-            border-left: 4px solid #00AAFF;
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            transform: translate(-50%, -100%);
-            white-space: normal;
-            overflow: hidden;
-            position: relative;
-        }
-        #capital-tooltip.visible { opacity: 1; }
-
-/* 🛑 CONTROLO DE ROTAÇÃO: Canto Inferior Direito (Configuração Desktop) */
-#rotation-control {
-    position: absolute;
-    bottom: 20px; /* Alinhado com o fundo */
-    right: 20px; /* Alinha à direita */
-    left: auto; /* Garante alinhamento à direita no Desktop */
-    
-    z-index: 101;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 10px 15px;
-    border-radius: 8px;
-    color: white;
-    font-size: 0.9em;
-    display: none; /* Controlado por JS */
-    flex-direction: column;
-    gap: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    /* Largura fixa para Desktop */
-    width: 250px; 
-    min-width: unset; 
-}
-
-/* --- Mobile / Ecrãs Pequenos (max-width: 768px) --- */
-@media (max-width: 768px) {
-    #rotation-control {
-        /* Posição Mobile: Centrar na parte superior (ACIMA) do info-wrapper */
-        /* bottom: 20px é do info-wrapper, vamos posicionar este a 220px (200px do card + 20px de margem) */
-        bottom: 20px; 
-        right: auto;
-        left: 50%;
-        
-        /* Largura total com margem de 20px de cada lado */
-        width: calc(100% - 40px); 
-        transform: translateX(-50%); /* Centraliza horizontalmente */
-    }
-}
-
-        #rotation-control.visible {
-            display: flex;
-        }
-
-        /* [Resto dos estilos de controlo e internos] */
-        .control-group { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .slider-group { justify-content: center; }
-        #rotation-slider { flex-grow: 1; cursor: grab; margin: 0 5px; -webkit-appearance: none; appearance: none; background: transparent; }
-        #rotation-slider::-webkit-slider-runnable-track { width: 100%; height: 12px; background: rgba(255, 255, 255, 0.2); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.4); }
-        #rotation-slider::-moz-range-track { width: 100%; height: 12px; background: rgba(255, 255, 255, 0.2); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.4); }
-        #rotation-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -6px; height: 24px; width: 24px; border-radius: 50%; background: #00AAFF; border: 2px solid #FFF; cursor: grab; box-shadow: 0 0 5px rgba(0, 0, 0, 0.8); }
-        #rotation-slider::-moz-range-thumb { height: 20px; width: 20px; border-radius: 50%; background: #00AAFF; border: 2px solid #FFF; cursor: grab; }
-        .rotate-btn, .rotate-step-btn { padding: 5px 10px; border: 1px solid #444; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; font-weight: bold; color: #FFF; background-color: #222; }
-        .rotate-step-btn { padding: 5px 12px; font-size: 1.1em; line-height: 1; }
-        #toggle-rotate.active { background-color: #00AAFF; border-color: #00AAFF; }
-        #toggle-rotate:not(.active) { border-color: #2596be; }
-        .rotate-btn:hover, .rotate-step-btn:hover { background-color: #555; }
-        #floating-info .data-value { font-size: 1.5em; font-weight: bold; color: #FFFFFF; line-height: 1; }
-        #floating-info .unit { font-size: 0.8em; color: #CCCCCC; margin-top: 2px; }
-        #floating-info .info-icon { width: 200px; height: 100px; object-fit: contain; margin-bottom: 5px; }
-        #capital-tooltip b { font-size: 1.2em; display: block; margin-bottom: 5px; }
-        #capital-tooltip ul { list-style-type: disc; padding-left: 15px; margin-top: 5px; margin-bottom: 0; font-size: 0.9em; font-weight: normal; line-height: 1.2; }
-        #capital-tooltip .icon-bottom-right { position: absolute; bottom: -10; right: 0; width: 150px; height: 150px; opacity: 0.7; filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.5)); border-radius: 0 0 6px 0; object-fit: contain; }
-        .pie-chart { width: 100px; height: 100px; margin: 10px auto; border-radius: 50%; background: conic-gradient( rgba(255, 255, 255, 1) 0% 30%, rgba(150, 150, 150, 1) 30% 70%, rgba(200, 200, 200, 1) 70% 90%, rgba(50, 50, 50, 1) 90% 100% ); }
-        .legend-list { list-style: none; padding: 0; margin: 10px 0 0 0; font-size: 1.2em; }
-        .legend-item { display: flex; justify-content: center; align-items: center; margin-bottom: 2px; gap: 10px; }
-        .legend-color-box { width: 8px; height: 8px; margin-right: 5px; border-radius: 2px; display: inline-block; }
-    </style>
+<!--  <script type="module"> import * as THREE from 'three'; window.THREE = THREE;</script>-->
+<!--  <script src="../../dist/three-globe.js" defer></script>-->
 </head>
 
 <body>
-    <div id="logo-top-left">
-        <img src="https://static.wixstatic.com/media/a6967f_b1478a338afc4870879e1ba83f915dc5~mv2.png" alt="Logo MWS" />
-    </div>
+  <div id="globeViz"></div>
 
-    <div id="container">
-        <div id="capital-tooltip"></div>
-    </div>
-    
-    <div id="zoom-controls">
-        <button id="zoom-in" class="zoom-btn" title="Zoom In">+</button>
-        <button id="zoom-out" class="zoom-btn" title="Zoom Out">-</button>
-    </div>
+  <script type="module">
+    import ThreeGlobe from 'https://esm.sh/three-globe?external=three';
+    import * as THREE from 'https://esm.sh/three';
+    import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js?external=three';
 
-    <div id="rotation-control">
-        <div class="control-group">
-            <label>Rotação Automática:</label>
-            <button id="toggle-rotate" class="rotate-btn active">ON</button>
-        </div>
+    // Gen random data
+    const N = 20;
 
-        <div class="control-group slider-group">
-            <button id="rotate-left" class="rotate-step-btn" title="Girar para Esquerda">◀</button>
-            <input type="range" id="rotation-slider" min="0" max="360" value="0" step="1" title="Ajuste Manual de Longitude">
-            <button id="rotate-right" class="rotate-step-btn" title="Girar para Direita">▶</button>
-        </div>
-    </div>
-
-    <div id="info-wrapper">
-        <div id="floating-info">
-            <!--*<img src="https://static.wixstatic.com/media/a6967f_034c4bb41e814fc7b03969408024e9a1~mv2.png" alt="MWS Icon" class="info-icon"/>-->
-            <span class="data-value">304 MWS</span>
-        </div>
-
-        <div id="details-panel">
-            <div class="pie-chart"></div>
-
-            <ul class="legend-list">
-                <li class="legend-item">
-                    <span><span class="legend-color-box" style="background-color: rgb(255, 255, 255);"></span>MWS300</span>
-                    <span>30%</span>
-                </li>
-                <li class="legend-item">
-                    <span><span class="legend-color-box" style="background-color: rgb(150, 150, 150);"></span>MWS500</span>
-                    <span>40%</span>
-                </li>
-                <li class="legend-item">
-                    <span><span class="legend-color-box" style="background-color: rgb(200, 200, 200);"></span>MWS700</span>
-                    <span>20%</span>
-                </li>
-                <li class="legend-item">
-                    <span><span class="legend-color-box" style="background-color: rgb(50, 50, 50);"></span>MWS715</span>
-                    <span>10%</span>
-                </li>
-            </ul>
-        </div>
-    </div>
-
-    <script type="text/javascript">
-        let autoRotateEnabled = true;
-        let deckgl;
-        let rotationSlider;
-        const MANUAL_STEP = 5;
-        const ZOOM_STEP = 0.5;
-
-        // --- Variáveis de Cor e Animação ---
-        let colorAnimationTime = 0;
-        const ANIMATION_CYCLE_MS = 6000;
-
-        const ARC_PRIMARY_BLUE = [34, 108, 245, 200];
-        const ARC_TARGET_WHITE = [255, 255, 255, 255];
-        const POINT_PRIMARY_CYAN = [61, 208, 252, 255];
-        const POINT_TARGET_WHITE_SOFT = [255, 255, 255, 255];
-
-        // [Funções de Animação e Utilitários]
-
-        function lerpColor(c1, c2, t) {
-            return [
-                Math.round(c1[0] + (c2[0] - c1[0]) * t),
-                Math.round(c1[1] + (c2[1] - c1[1]) * t),
-                Math.round(c1[2] + (c2[2] - c1[2]) * t),
-                Math.round(c1[3] + (c2[3] - c1[3]) * t)
-            ];
-        }
-
-        function simpleHash(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash |= 0;
-            }
-            return Math.abs(hash);
-        }
-
-        function getAnimatedColorRandom(data, currentTime, initialColor, targetColor, cycleDuration) {
-            const hashStr = data.name ? data.name : (data.source + data.target);
-            const seed = simpleHash(hashStr);
-
-            const offset = (seed % 10000) / 10000;
-
-            const totalCycleTime = cycleDuration * 2;
-            const normalizedTime = ((currentTime % totalCycleTime) / totalCycleTime) + offset;
-            let t = normalizedTime % 1;
-
-            if (t > 0.5) {
-                t = 1 - (t - 0.5) * 2;
-            } else {
-                t = t * 2;
-            }
-
-            t = t * t * (3 - 2 * t); // Função de suavização
-            return lerpColor(initialColor, targetColor, t);
-        }
-        
-        function updateZoom(delta) {
-            const newZoom = Math.max(1, Math.min(10, currentViewState.zoom + delta));
-            
-            currentViewState = {
-                ...currentViewState,
-                zoom: newZoom,
-            };
-            
-            deckgl.setProps({ 
-                viewState: {
-                    ...currentViewState,
-                    transitionDuration: 300, 
-                    transitionInterpolator: new deck.FlyToInterpolator() 
-                } 
-            });
-        }
-
-        // --- FUNÇÃO DE ANIMAÇÃO DO GLOBO E DAS CORES (Loop Principal) ---
-        let lastUpdateTime = 0;
-        function animateFrame(timestamp) {
-            if (!lastUpdateTime) lastUpdateTime = timestamp;
-            const deltaTime = timestamp - lastUpdateTime;
-            lastUpdateTime = timestamp;
-
-            // 1. ANIMAÇÃO DA ROTAÇÃO
-            if (autoRotateEnabled) {
-                const ROTATION_SPEED = 0.10;
-                const newLongitude = currentViewState.longitude + ROTATION_SPEED * (deltaTime / 16.6667);
-                currentViewState = {
-                    ...currentViewState,
-                    longitude: newLongitude > 180 ? newLongitude - 360 : newLongitude
-                };
-                if (rotationSlider) {
-                    let sliderValue = currentViewState.longitude + 180;
-                    if (sliderValue > 360) sliderValue -= 360;
-                    rotationSlider.value = sliderValue;
-                }
-            }
-
-            // 2. ATUALIZAÇÃO DO TEMPO GLOBAL PARA A COR
-            colorAnimationTime += deltaTime;
-
-            // 3. ATUALIZAR O DECK.GL com as camadas animadas
-            deckgl.setProps({
-                viewState: currentViewState,
-                layers: [
-                    new deck.SolidPolygonLayer({ id: 'background', data: [[[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]], opacity: 1, getPolygon: d => d, stroked: false, filled: true, getFillColor: [25, 24, 34, 255], pickable: true, onClick: hideCapitalCard }),
-                    new deck.GeoJsonLayer({ id: 'base-map', data: COUNTRIES, stroked: true, filled: true, lineWidthMinPixels: 0.5, getLineColor: [255, 255, 255], getFillColor: [7, 7, 10, 255], pickable: true, onClick: hideCapitalCard }),
-                    new deck.GeoJsonLayer({ id: 'globe-outline', data: { type: 'Feature', geometry: { type: 'Sphere' } }, getLineColor: [255, 255, 255, 255], getLineWidth: 2, lineWidthUnits: 'pixels', lineWidthMinPixels: 1.5, stroked: true, filled: false }),
-
-                    // Camada de Arcos Animados
-                    new deck.ArcLayer({
-                        id: 'arcs-portugal-selected',
-                        data: ARC_DATA,
-                        getSourcePosition: d => d.sourceCoords,
-                        getTargetPosition: d => d.targetCoords,
-                        getSourceColor: d => getAnimatedColorRandom(d, colorAnimationTime, ARC_PRIMARY_BLUE, ARC_TARGET_WHITE, ANIMATION_CYCLE_MS),
-                        getTargetColor: d => getAnimatedColorRandom(d, colorAnimationTime, ARC_PRIMARY_BLUE, ARC_TARGET_WHITE, ANIMATION_CYCLE_MS),
-                        getWidth: 0.5,
-                        greatCircle: true,
-                        autoHighlight: true,
-                        highlightColor: [255, 255, 255, 255],
-                        updateTriggers: {
-                            getSourceColor: colorAnimationTime,
-                            getTargetColor: colorAnimationTime
-                        }
-                    }),
-
-                    // Ponto de Portugal (Estático)
-                    new deck.ScatterplotLayer({ 
-                        id: 'portugal-point', 
-                        data: [PORTUGAL_CAPITAL], 
-                        getPosition: d => d.coords, 
-                        getRadius: 80000, 
-                        getFillColor: [0, 0, 255, 255], 
-                        getLineColor: [0, 0, 0, 0], 
-                        getLineWidth: 0.5, 
-                        lineWidthMinPixels: 1, 
-                        stroked: true, 
-                        pickable: true, 
-                        onClick: showCapitalCard 
-                    }),
-
-                    // Pontos de Capitais (Animados)
-                    new deck.ScatterplotLayer({ 
-                        id: 'target-capitals-points', 
-                        data: selectedCapitalsData.filter(c => c.name !== PORTUGAL_CAPITAL.name), 
-                        getPosition: d => d.coords, 
-                        getRadius: 80000, 
-                        getFillColor: d => getAnimatedColorRandom(d, colorAnimationTime, POINT_PRIMARY_CYAN, POINT_TARGET_WHITE_SOFT, ANIMATION_CYCLE_MS), 
-                        getLineColor: [0, 0, 0], 
-                        getLineWidth: 1, 
-                        lineWidthMinPixels: 1, 
-                        stroked: true, 
-                        pickable: true, 
-                        onClick: showCapitalCard,
-                        updateTriggers: {
-                            getFillColor: colorAnimationTime
-                        }
-                    })
-                ]
-            });
-
-            requestAnimationFrame(animateFrame);
-        }
-        // ------------------------------------------------------------------
-        
-        // [Funções de Controlo de UI e Dados]
-
-        function updateRotation(newLongitude) {
-            currentViewState = {
-                ...currentViewState,
-                longitude: newLongitude
-            };
-            deckgl.setProps({ viewState: currentViewState, controller: true, transitionDuration: 0 });
-        }
-
-        function toggleGlobeMode(isPanelOpen) {
-            const rotationControl = document.getElementById('rotation-control');
-            const toggleRotate = document.getElementById('toggle-rotate');
-
-            if (isPanelOpen) {
-                autoRotateEnabled = true;
-                deckgl.setProps({ controller: false, transitionDuration: 0 });
-                toggleRotate.classList.add('active');
-                toggleRotate.textContent = 'ON';
-                rotationControl.classList.remove('visible');
-            } else {
-                autoRotateEnabled = false;
-                deckgl.setProps({ controller: true, transitionDuration: 0 });
-                toggleRotate.classList.remove('active');
-                toggleRotate.textContent = 'OFF';
-                rotationControl.classList.add('visible');
-            }
-        }
-        
-        function showCapitalCard(info) {
-            const tooltip = document.getElementById('capital-tooltip');
-            const MWS_OPTIONS = ["MWS300", "MWS500", "MWS700", "MWS715"];
-            const IMAGE_URL = "https://static.wixstatic.com/media/a6967f_57a8d2b6c06a4b819541a54cab7694f4~mv2.png";
-
-            const getRandomMWS = (used) => {
-                let options = MWS_OPTIONS.filter(m => !used.includes(m));
-                if (options.length === 0) options = MWS_OPTIONS;
-                const selection = options[Math.floor(Math.random() * options.length)];
-                return selection;
-            };
-
-            if (info.object) {
-                autoRotateEnabled = false;
-
-                const name = info.object.name || 'Ponto Desconhecido';
-
-                const model1 = getRandomMWS([]);
-                const model2 = getRandomMWS([model1]);
-
-                const count1 = Math.floor(Math.random() * 5) + 1;
-                const count2 = Math.floor(Math.random() * 5) + 1;
-
-                const cardContent = `
-                    Capital: <b style="font-size: 1.1em;">${name}</b>
-                    <ul>
-                        <li>${model1} - ${count1} eq.</li>
-                        <li>${model2} - ${count2} eq.</li>
-                    </ul>
-                    <img src="${IMAGE_URL}" class="icon-bottom-right" alt="MWS Icon"/>
-                `;
-
-                const [x, y] = info.viewport.project(info.object.coords || info.object.position);
-
-                tooltip.style.left = `${x}px`;
-                tooltip.style.top = `${y}px`;
-                tooltip.innerHTML = cardContent;
-                tooltip.classList.add('visible');
-            }
-            return true;
-        }
-
-        function hideCapitalCard() {
-            const tooltip = document.getElementById('capital-tooltip');
-            tooltip.classList.remove('visible');
-            return true;
-        }
+const arcsData = [
+  { startLat: 38.7223, startLng: -9.1393, endLat: 40.7128, endLng: -74.0060, color: '#50B6E8' }, // Nova Iorque
+  { startLat: 38.7223, startLng: -9.1393, endLat: 51.5074, endLng: -0.1278, color: '#50B6E8' }, // Londres
+  { startLat: 38.7223, startLng: -9.1393, endLat: 48.8566, endLng: 2.3522, color: '#50B6E8' }, // Paris
+  { startLat: 38.7223, startLng: -9.1393, endLat: 35.6895, endLng: 139.6917, color: '#50B6E8' }, // Tóquio
+  { startLat: 38.7223, startLng: -9.1393, endLat: 39.9042, endLng: 116.4074, color: '#50B6E8' }, // Pequim
+  { startLat: 38.7223, startLng: -9.1393, endLat: 55.7558, endLng: 37.6173, color: '#50B6E8' }, // Moscovo
+  { startLat: 38.7223, startLng: -9.1393, endLat: 52.5200, endLng: 13.4050, color: '#50B6E8' }, // Berlim
+  { startLat: 38.7223, startLng: -9.1393, endLat: 41.9028, endLng: 12.4964, color: '#50B6E8' }, // Roma
+  { startLat: 38.7223, startLng: -9.1393, endLat: 37.5665, endLng: 126.9780, color: '#50B6E8' }, // Seul
+  { startLat: 38.7223, startLng: -9.1393, endLat: 19.4326, endLng: -99.1332, color: '#50B6E8' }, // Cidade do México
+  { startLat: 38.7223, startLng: -9.1393, endLat: -23.5505, endLng: -46.6333, color: '#50B6E8' }, // São Paulo
+  { startLat: 38.7223, startLng: -9.1393, endLat: -34.6037, endLng: -58.3816, color: '#50B6E8' }, // Buenos Aires
+  { startLat: 38.7223, startLng: -9.1393, endLat: -33.8688, endLng: 151.2093, color: '#50B6E8' }, // Sydney
+  { startLat: 38.7223, startLng: -9.1393, endLat: -35.2809, endLng: 149.1300, color: '#50B6E8' }, // Canberra
+  { startLat: 38.7223, startLng: -9.1393, endLat: -1.2921, endLng: 36.8219, color: '#50B6E8' }, // Nairobi
+  { startLat: 38.7223, startLng: -9.1393, endLat: 30.0444, endLng: 31.2357, color: '#50B6E8' }, // Cairo
+  { startLat: 38.7223, startLng: -9.1393, endLat: 28.6139, endLng: 77.2090, color: '#50B6E8' }, // Nova Deli
+  { startLat: 38.7223, startLng: -9.1393, endLat: 1.3521, endLng: 103.8198, color: '#50B6E8' }, // Singapura
+  { startLat: 38.7223, startLng: -9.1393, endLat: 3.1390, endLng: 101.6869, color: '#50B6E8' }, // Kuala Lumpur
+  { startLat: 38.7223, startLng: -9.1393, endLat: 25.276987, endLng: 55.296249, color: '#50B6E8' }, // Dubai
+  { startLat: 38.7223, startLng: -9.1393, endLat: 24.7136, endLng: 46.6753, color: '#50B6E8' }, // Riade
+  { startLat: 38.7223, startLng: -9.1393, endLat: 32.0853, endLng: 34.7818, color: '#50B6E8' }, // Tel Aviv
+  { startLat: 38.7223, startLng: -9.1393, endLat: 59.3293, endLng: 18.0686, color: '#50B6E8' }, // Estocolmo
+  { startLat: 38.7223, startLng: -9.1393, endLat: 60.1699, endLng: 24.9384, color: '#50B6E8' }, // Helsínquia
+  { startLat: 38.7223, startLng: -9.1393, endLat: 59.9139, endLng: 10.7522, color: '#50B6E8' }, // Oslo
+  { startLat: 38.7223, startLng: -9.1393, endLat: 55.6761, endLng: 12.5683, color: '#50B6E8' }, // Copenhaga
+  { startLat: 38.7223, startLng: -9.1393, endLat: 50.1109, endLng: 8.6821, color: '#50B6E8' }, // Frankfurt
+  { startLat: 38.7223, startLng: -9.1393, endLat: 45.4642, endLng: 9.1900, color: '#50B6E8' }, // Milão
+  { startLat: 38.7223, startLng: -9.1393, endLat: 52.3676, endLng: 4.9041, color: '#50B6E8' }, // Amesterdão
+  { startLat: 38.7223, startLng: -9.1393, endLat: 50.8503, endLng: 4.3517, color: '#50B6E8' }, // Bruxelas
+  { startLat: 38.7223, startLng: -9.1393, endLat: 46.2044, endLng: 6.1432, color: '#50B6E8' }, // Genebra
+  { startLat: 38.7223, startLng: -9.1393, endLat: 25.2048, endLng: 55.2708, color: '#50B6E8' }, // Abu Dhabi
+  { startLat: 38.7223, startLng: -9.1393, endLat: 13.7563, endLng: 100.5018, color: '#50B6E8' }, // Banguecoque
+  { startLat: 38.7223, startLng: -9.1393, endLat: 14.5995, endLng: 120.9842, color: '#50B6E8' }, // Manila
+  { startLat: 38.7223, startLng: -9.1393, endLat: -6.2088, endLng: 106.8456, color: '#50B6E8' }, // Jacarta
+  { startLat: 38.7223, startLng: -9.1393, endLat: -33.9249, endLng: 18.4241, color: '#50B6E8' }, // Cidade do Cabo
+  { startLat: 38.7223, startLng: -9.1393, endLat: -26.2041, endLng: 28.0473, color: '#50B6E8' }, // Joanesburgo
+  { startLat: 38.7223, startLng: -9.1393, endLat: 35.6762, endLng: 139.6503, color: '#50B6E8' }, // Tóquio (centro urbano)
+  { startLat: 38.7223, startLng: -9.1393, endLat: 41.0082, endLng: 28.9784, color: '#50B6E8' }, // Istambul
+  { startLat: 38.7223, startLng: -9.1393, endLat: 6.5244, endLng: 3.3792, color: '#50B6E8' }, // Lagos
+  { startLat: 38.7223, startLng: -9.1393, endLat: -12.0464, endLng: -77.0428, color: '#50B6E8' }, // Lima
+  { startLat: 38.7223, startLng: -9.1393, endLat: 4.7110, endLng: -74.0721, color: '#50B6E8' }, // Bogotá
+  { startLat: 38.7223, startLng: -9.1393, endLat: -22.9068, endLng: -43.1729, color: '#50B6E8' }, // Rio de Janeiro
+  { startLat: 38.7223, startLng: -9.1393, endLat: 9.0820, endLng: 8.6753, color: '#50B6E8' }, // Abuja
+  { startLat: 38.7223, startLng: -9.1393, endLat: 19.075984, endLng: 72.877656, color: '#50B6E8' }, // Mumbai
+  { startLat: 38.7223, startLng: -9.1393, endLat: 31.2304, endLng: 121.4737, color: '#50B6E8' }, // Xangai
+  { startLat: 38.7223, startLng: -9.1393, endLat: 22.3964, endLng: 114.1095, color: '#50B6E8' }, // Hong Kong
+  { startLat: 38.7223, startLng: -9.1393, endLat: 22.5726, endLng: 88.3639, color: '#50B6E8' }, // Calcutá
+  { startLat: 38.7223, startLng: -9.1393, endLat: 35.6892, endLng: 51.3890, color: '#50B6E8' } // Teerão
+];
 
 
-        // [Dados Deck.gl]
-        const COUNTRIES = 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson';
-        const PORTUGAL_CAPITAL = { name: "Lisboa (Portugal)", coords: [-9.1393, 38.7223] };
 
-        const selectedCapitalsData = [
-            { name: "Lisboa (Portugal)", country: "PORTUGAL", coords: PORTUGAL_CAPITAL.coords },
-            { name: "Berlim", country: "ALEMANHA", coords: [13.405, 52.52] },
-            { name: "Viena", country: "ÁUSTRIA", coords: [16.3707, 48.2064] },
-            { name: "Bruxelas", country: "BÉLGICA", coords: [4.3499, 50.8467] },
-            { name: "Paris", country: "FRANÇA", coords: [2.3522, 48.8566] },
-            { name: "Madrid", country: "ESPANHA", coords: [-3.7038, 40.4168] },
-            { name: "Estocolmo", country: "SUÉCIA", coords: [18.0686, 59.3293] },
-            { name: "Copenhaga", country: "DINAMARCA", coords: [12.5683, 55.6761] },
-            { name: "Helsínquia", country: "FINLÂNDIA", coords: [24.9458, 60.1708] },
-            { name: "Minsk", country: "BIELORRÚSSIA", coords: [27.5667, 53.9] },
-            { name: "Sófia", country: "BULGÁRIA", coords: [23.3242, 42.6975] },
-            { name: "Budapeste", country: "HUNGRIA", coords: [19.0402, 47.4979] },
-            { name: "Vilnius", country: "LITUÂNIA", coords: [25.2798, 54.6872] },
-            { name: "Varsóvia", country: "POLÓNIA", coords: [21.0175, 52.2297] },
-            { name: "Brasília", country: "BRASIL", coords: [-47.9297, -15.7797] },
-            { name: "Ottawa", country: "CANADÁ", coords: [-75.698, 45.4166] },
-            { name: "Santiago", country: "CHILE", coords: [-70.6693, -33.4489] },
-            { name: "San Salvador", country: "EL SALVADOR", coords: [-89.1872, 13.6929] },
-            { name: "Cidade da Guatemala", country: "GUATEMALA", coords: [-90.5069, 14.6349] },
-            { name: "Tegucigalpa", country: "HONDURAS", coords: [-87.2068, 14.0822] },
-            { name: "Cidade do México", country: "MÉXICO", coords: [-99.1333, 19.4333] },
-            { name: "Washington D.C.", country: "EUA", coords: [-77.0369, 38.9072] },
-            { name: "Camberra", country: "AUSTRÁLIA", coords: [149.1281, -35.2835] },
-            { name: "Doha", country: "CATAR", coords: [51.531, 25.2854] },
-            { name: "Riade", country: "ARÁBIA SAUDITA", coords: [46.7385, 24.7136] },
-            { name: "Jerusalém", country: "ISRAEL", coords: [35.2163, 31.7683] },
-            { name: "Roma", country: "ITÁLIA", coords: [12.4964, 41.9028] },
-            { name: "Atenas", country: "GRÉCIA", coords: [23.7275, 37.9838] },
-            { name: "Moscovo", country: "RÚSSIA", coords: [37.6173, 55.7558] },
-            { name: "Singapura", country: "SINGAPURA", coords: [103.8198, 1.3521] },
-            { name: "Taipei", country: "TAIWAN", coords: [121.5654, 25.033] },
-            { name: "Ulaanbaatar", country: "MONGÓLIA", coords: [106.9055, 47.919] },
-            { name: "Tashkent", country: "UZBEQUISTÃO", coords: [69.2797, 41.2995] }
-        ];
+    const Globe = new ThreeGlobe()
+      .globeImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg')
+      .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png')
+      .arcsData(arcsData)
+      
+      
+      .arcColor('color')
+      .arcDashLength(0.4)
+      .arcDashGap(4)
+      .arcDashInitialGap(() => Math.random() * 5)
+      .arcDashAnimateTime(1000);
 
-        function generateArcData_FromPortugal(capitals) {
-            const arcs = [];
-            const otherCapitals = capitals.filter(c => c.name !== PORTUGAL_CAPITAL.name);
-            otherCapitals.forEach(targetCapital => {
-                arcs.push({ source: PORTUGAL_CAPITAL.name, target: targetCapital.name, sourceCoords: PORTUGAL_CAPITAL.coords, targetCoords: targetCapital.coords });
-            });
-            return arcs;
-        }
 
-        const ARC_DATA = generateArcData_FromPortugal(selectedCapitalsData);
 
-        // --- LÓGICA DE DETEÇÃO DE TELEMÓVEL E AJUSTE DE VISÃO (CORRIGIDA) ---
-        function isMobileView() {
-            return window.innerWidth <= 768; 
-        }
 
-        let initialZoom = 1.5; 
-        let initialLatitude = PORTUGAL_CAPITAL.coords[1]; 
-        let initialPitch = 10; 
 
-        if (isMobileView()) {
-            // Mantém o zoom em 1.0 para mobile
-            initialZoom = 1.0; 
-            
-            // CORRIGIDO: Latitude ajustada para 45 e Pitch para 50. 
-            // O Pitch mais alto compensa o zoom baixo e "empurra" o globo para cima.
-            initialLatitude = 45; 
-            initialPitch = 50; 
-        }
-        // --------------------------------------------------------
 
-        let currentViewState = {
-            latitude: initialLatitude, 
-            longitude: PORTUGAL_CAPITAL.coords[0],
-            zoom: initialZoom, 
-            pitch: initialPitch 
-        };
 
-        function handleViewStateChange(viewState, interactionContext) {
-            if (interactionContext.isDragging || interactionContext.isRotating) {
-                autoRotateEnabled = false;
-                document.getElementById('toggle-rotate').classList.remove('active');
-                document.getElementById('toggle-rotate').textContent = 'OFF';
+    // Setup renderer
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+    document.getElementById('globeViz').appendChild(renderer.domElement);
 
-                if (rotationSlider) {
-                    let sliderValue = viewState.longitude + 180;
-                    if (sliderValue > 360) sliderValue -= 360;
-                    rotationSlider.value = sliderValue;
-                }
-            }
-            else if (!interactionContext.isDragging && !interactionContext.isRotating && !autoRotateEnabled) {
-                const detailsPanel = document.getElementById('details-panel');
-                if (detailsPanel && detailsPanel.classList.contains('open')) {
-                    autoRotateEnabled = true;
-                    document.getElementById('toggle-rotate').classList.add('active');
-                    document.getElementById('toggle-rotate').textContent = 'ON';
-                } else {
-                    autoRotateEnabled = false;
-                }
-            }
+    // Setup scene
+    const scene = new THREE.Scene();
+    scene.add(Globe);
+    scene.add(new THREE.AmbientLight(0xFFFFFF, Math.PI));
+    scene.add(new THREE.DirectionalLight(0xFFFFFF, 0.6 * Math.PI));
 
-            currentViewState = {
-                ...viewState,
-                isDragging: interactionContext.isDragging,
-                zoom: viewState.zoom
-            };
+    // Setup camera
+    const camera = new THREE.PerspectiveCamera();
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    camera.position.z = 500;
 
-            return viewState;
-        }
+    // Add camera controls
+    const tbControls = new TrackballControls(camera, renderer.domElement);
+    tbControls.minDistance = 101;
+    tbControls.rotateSpeed = 5;
+    tbControls.zoomSpeed = 0.8;
 
-        deckgl = new deck.DeckGL({
-            container: 'container',
-            getTooltip: ({ object }) => object && `Capital: ${object.name}`,
+// VELOCIDADE DE ROTAÇÃO
+    const ROTATE_SPEED = -0.002; 
 
-            views: new deck._GlobeView(),
-            initialViewState: currentViewState,
-            controller: true,
-            onViewStateChange: ({ viewState, interactionContext }) => {
-                return handleViewStateChange(viewState, interactionContext);
-            },
-            layers: [
-                new deck.SolidPolygonLayer({ id: 'background', data: [[[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]], opacity: 1, getPolygon: d => d, stroked: false, filled: true, getFillColor: [25, 24, 34, 255], pickable: true, onClick: hideCapitalCard }),
-                new deck.GeoJsonLayer({ id: 'base-map', data: COUNTRIES, stroked: true, filled: true, lineWidthMinPixels: 0.5, getLineColor: [255, 255, 255], getFillColor: [7, 7, 10, 255], pickable: true, onClick: hideCapitalCard }),
-                new deck.GeoJsonLayer({ id: 'globe-outline', data: { type: 'Feature', geometry: { type: 'Sphere' } }, getLineColor: [255, 255, 255, 255], getLineWidth: 2, lineWidthUnits: 'pixels', lineWidthMinPixels: 1.5, stroked: true, filled: false }),
-                new deck.ArcLayer({
-                    id: 'arcs-portugal-selected',
-                    data: ARC_DATA,
-                    getSourcePosition: d => d.sourceCoords,
-                    getTargetPosition: d => d.targetCoords,
-                    getSourceColor: ARC_PRIMARY_BLUE,
-                    getTargetColor: ARC_PRIMARY_BLUE,
-                    getWidth: 0.5,
-                    greatCircle: true,
-                    autoHighlight: true,
-                    highlightColor: [255, 255, 255, 255]
-                }),
-                new deck.ScatterplotLayer({ id: 'portugal-point', data: [PORTUGAL_CAPITAL], getPosition: d => d.coords, getRadius: 80000, getFillColor: [0, 0, 255, 255], getLineColor: [0, 0, 0, 0], getLineWidth: 0.5, lineWidthMinPixels: 1, stroked: true, pickable: true, onClick: showCapitalCard }),
-                new deck.ScatterplotLayer({ id: 'target-capitals-points', data: selectedCapitalsData.filter(c => c.name !== PORTUGAL_CAPITAL.name), getPosition: d => d.coords, getRadius: 80000, getFillColor: POINT_PRIMARY_CYAN, getLineColor: [0, 0, 0], getLineWidth: 1, lineWidthMinPixels: 1, stroked: true, pickable: true, onClick: showCapitalCard })
-            ]
-        });
+    // Kick-off renderer
+    (function animate() { // IIFE
+      // Rotação Automática: Gira o objeto Globe em torno do eixo Y
+      Globe.rotation.y += ROTATE_SPEED; 
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const floatingInfo = document.getElementById('floating-info');
-            const detailsPanel = document.getElementById('details-panel');
-            rotationSlider = document.getElementById('rotation-slider');
-            const toggleRotate = document.getElementById('toggle-rotate');
-            const rotateLeftBtn = document.getElementById('rotate-left');
-            const rotateRightBtn = document.getElementById('rotate-right');
-            
-            // Botões de Zoom
-            const zoomInBtn = document.getElementById('zoom-in');
-            const zoomOutBtn = document.getElementById('zoom-out');
-
-            floatingInfo.addEventListener('click', () => {
-                const wasOpen = detailsPanel.classList.contains('open');
-                hideCapitalCard();
-                detailsPanel.classList.toggle('open');
-                floatingInfo.classList.toggle('active');
-                toggleGlobeMode(!wasOpen);
-            });
-
-            toggleRotate.addEventListener('click', () => {
-                const isActive = toggleRotate.classList.toggle('active');
-                toggleRotate.textContent = isActive ? 'ON' : 'OFF';
-
-                if (isActive) {
-                    autoRotateEnabled = true;
-                    deckgl.setProps({ controller: false, transitionDuration: 0 });
-                } else {
-                    autoRotateEnabled = false;
-                    deckgl.setProps({ controller: true, transitionDuration: 0 });
-                }
-            });
-
-            rotationSlider.addEventListener('input', (event) => {
-                autoRotateEnabled = false;
-                toggleRotate.classList.remove('active');
-                toggleRotate.textContent = 'OFF';
-                const newLongitude = parseFloat(event.target.value) - 180;
-                updateRotation(newLongitude);
-            });
-
-            function handleStepRotation(direction) {
-                autoRotateEnabled = false;
-                toggleRotate.classList.remove('active');
-                toggleRotate.textContent = 'OFF';
-                const step = direction * MANUAL_STEP;
-                let newLongitude = currentViewState.longitude + step;
-
-                if (newLongitude > 180) newLongitude -= 360;
-                if (newLongitude < -180) newLongitude += 360;
-
-                let sliderValue = newLongitude + 180;
-                if (sliderValue > 360) sliderValue -= 360;
-                rotationSlider.value = sliderValue;
-                updateRotation(newLongitude);
-            }
-
-            rotateLeftBtn.addEventListener('click', () => handleStepRotation(-1));
-            rotateRightBtn.addEventListener('click', () => handleStepRotation(1));
-            
-            zoomInBtn.addEventListener('click', () => updateZoom(ZOOM_STEP));
-            zoomOutBtn.addEventListener('click', () => updateZoom(-ZOOM_STEP));
-            
-            animateFrame(0);
-            toggleGlobeMode(false);
-        });
-    </script>
+      // Frame cycle
+      tbControls.update(); // COMENTADO/REMOVIDO
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    })();
+  </script>
 </body>
-</html>
