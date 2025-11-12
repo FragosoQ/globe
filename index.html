@@ -1,137 +1,194 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
-  <style> body { margin: 0; } </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Globo Responsivo - Capitais</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000;
+    }
+    #globeViz {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    
+    
+        #logo {
+      position: absolute; /* Superior Esquerdo */
+      top: 30px;
+      left: 30px;
+      width: 250px;
+      height: auto;
+      z-index: 10;
+      border-radius: 5px;
+    }
+   
+    #logo2 {
+      position: absolute; /* Superior Direito */
+      top: 30px;
+      right: 30px;
+      width: 200px;
+      height: auto;
+      z-index: 10;
+      border-radius: 5px;
+    }
+   
+    #logo3 {
+      position: absolute; /* Inferior Direito */
+      bottom: 30px;
+      right: 30px;
+      width: 150px;
+      height: auto;
+      z-index: 10;
+      border-radius: 5px;
+    }
+    
+    
+  </style>
 
-  <script type="importmap">{ "imports": {
-    "three": "https://esm.sh/three",
-    "three/": "https://esm.sh/three/"
-  }}</script>
-
-<!--  <script type="module"> import * as THREE from 'three'; window.THREE = THREE;</script>-->
-<!--  <script src="../../dist/three-globe.js" defer></script>-->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://esm.sh/three",
+        "three/": "https://esm.sh/three/"
+      }
+    }
+  </script>
 </head>
 
 <body>
   <div id="globeViz"></div>
-
+  <img id="logo" src="https://static.wixstatic.com/media/a6967f_b1478a338afc4870879e1ba83f915dc5~mv2.png" alt="Logo Multiwasher">
+   
+    <img id="logo2" src="https://static.wixstatic.com/media/a6967f_691cf1aade3c471c816d1071b0c6ebdd~mv2.png" alt="Logo Somengil">
   <script type="module">
     import ThreeGlobe from 'https://esm.sh/three-globe?external=three';
     import * as THREE from 'https://esm.sh/three';
     import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js?external=three';
 
-    // Gen random data
-    const N = 20;
+    // --- Dados de arcos (todas as capitais a partir de Lisboa) ---
+    const arcsData = [
+      { startLat: 38.7223, startLng: -9.1393, endLat: 40.7128, endLng: -74.0060, color: '#50B6E8' }, // Nova Iorque
+      { startLat: 38.7223, startLng: -9.1393, endLat: 51.5074, endLng: -0.1278, color: '#50B6E8' }, // Londres
+      { startLat: 38.7223, startLng: -9.1393, endLat: 48.8566, endLng: 2.3522, color: '#50B6E8' }, // Paris
+      { startLat: 38.7223, startLng: -9.1393, endLat: 35.6895, endLng: 139.6917, color: '#50B6E8' }, // Tóquio
+      { startLat: 38.7223, startLng: -9.1393, endLat: 39.9042, endLng: 116.4074, color: '#50B6E8' }, // Pequim
+      { startLat: 38.7223, startLng: -9.1393, endLat: 55.7558, endLng: 37.6173, color: '#50B6E8' }, // Moscovo
+      { startLat: 38.7223, startLng: -9.1393, endLat: 52.5200, endLng: 13.4050, color: '#50B6E8' }, // Berlim
+      { startLat: 38.7223, startLng: -9.1393, endLat: 41.9028, endLng: 12.4964, color: '#50B6E8' }, // Roma
+      { startLat: 38.7223, startLng: -9.1393, endLat: 37.5665, endLng: 126.9780, color: '#50B6E8' }, // Seul
+      { startLat: 38.7223, startLng: -9.1393, endLat: 19.4326, endLng: -99.1332, color: '#50B6E8' }, // Cidade do México
+      { startLat: 38.7223, startLng: -9.1393, endLat: -23.5505, endLng: -46.6333, color: '#50B6E8' }, // São Paulo
+      { startLat: 38.7223, startLng: -9.1393, endLat: -34.6037, endLng: -58.3816, color: '#50B6E8' }, // Buenos Aires
+      { startLat: 38.7223, startLng: -9.1393, endLat: -33.8688, endLng: 151.2093, color: '#50B6E8' }, // Sydney
+      { startLat: 38.7223, startLng: -9.1393, endLat: -35.2809, endLng: 149.1300, color: '#50B6E8' }, // Canberra
+      { startLat: 38.7223, startLng: -9.1393, endLat: -1.2921, endLng: 36.8219, color: '#50B6E8' }, // Nairobi
+      { startLat: 38.7223, startLng: -9.1393, endLat: 30.0444, endLng: 31.2357, color: '#50B6E8' }, // Cairo
+      { startLat: 38.7223, startLng: -9.1393, endLat: 28.6139, endLng: 77.2090, color: '#50B6E8' }, // Nova Deli
+      { startLat: 38.7223, startLng: -9.1393, endLat: 1.3521, endLng: 103.8198, color: '#50B6E8' }, // Singapura
+      { startLat: 38.7223, startLng: -9.1393, endLat: 3.1390, endLng: 101.6869, color: '#50B6E8' }, // Kuala Lumpur
+      { startLat: 38.7223, startLng: -9.1393, endLat: 25.276987, endLng: 55.296249, color: '#50B6E8' }, // Dubai
+      { startLat: 38.7223, startLng: -9.1393, endLat: 24.7136, endLng: 46.6753, color: '#50B6E8' }, // Riade
+      { startLat: 38.7223, startLng: -9.1393, endLat: 32.0853, endLng: 34.7818, color: '#50B6E8' }, // Tel Aviv
+      { startLat: 38.7223, startLng: -9.1393, endLat: 59.3293, endLng: 18.0686, color: '#50B6E8' }, // Estocolmo
+      { startLat: 38.7223, startLng: -9.1393, endLat: 60.1699, endLng: 24.9384, color: '#50B6E8' }, // Helsínquia
+      { startLat: 38.7223, startLng: -9.1393, endLat: 59.9139, endLng: 10.7522, color: '#50B6E8' }, // Oslo
+      { startLat: 38.7223, startLng: -9.1393, endLat: 55.6761, endLng: 12.5683, color: '#50B6E8' }, // Copenhaga
+      { startLat: 38.7223, startLng: -9.1393, endLat: 50.1109, endLng: 8.6821, color: '#50B6E8' }, // Frankfurt
+      { startLat: 38.7223, startLng: -9.1393, endLat: 45.4642, endLng: 9.1900, color: '#50B6E8' }, // Milão
+      { startLat: 38.7223, startLng: -9.1393, endLat: 52.3676, endLng: 4.9041, color: '#50B6E8' }, // Amesterdão
+      { startLat: 38.7223, startLng: -9.1393, endLat: 50.8503, endLng: 4.3517, color: '#50B6E8' }, // Bruxelas
+      { startLat: 38.7223, startLng: -9.1393, endLat: 46.2044, endLng: 6.1432, color: '#50B6E8' }, // Genebra
+      { startLat: 38.7223, startLng: -9.1393, endLat: 25.2048, endLng: 55.2708, color: '#50B6E8' }, // Abu Dhabi
+      { startLat: 38.7223, startLng: -9.1393, endLat: 13.7563, endLng: 100.5018, color: '#50B6E8' }, // Banguecoque
+      { startLat: 38.7223, startLng: -9.1393, endLat: 14.5995, endLng: 120.9842, color: '#50B6E8' }, // Manila
+      { startLat: 38.7223, startLng: -9.1393, endLat: -6.2088, endLng: 106.8456, color: '#50B6E8' }, // Jacarta
+      { startLat: 38.7223, startLng: -9.1393, endLat: -33.9249, endLng: 18.4241, color: '#50B6E8' }, // Cidade do Cabo
+      { startLat: 38.7223, startLng: -9.1393, endLat: -26.2041, endLng: 28.0473, color: '#50B6E8' }, // Joanesburgo
+      { startLat: 38.7223, startLng: -9.1393, endLat: 35.6762, endLng: 139.6503, color: '#50B6E8' }, // Tóquio (centro)
+      { startLat: 38.7223, startLng: -9.1393, endLat: 41.0082, endLng: 28.9784, color: '#50B6E8' }, // Istambul
+      { startLat: 38.7223, startLng: -9.1393, endLat: 6.5244, endLng: 3.3792, color: '#50B6E8' }, // Lagos
+      { startLat: 38.7223, startLng: -9.1393, endLat: -12.0464, endLng: -77.0428, color: '#50B6E8' }, // Lima
+      { startLat: 38.7223, startLng: -9.1393, endLat: 4.7110, endLng: -74.0721, color: '#50B6E8' }, // Bogotá
+      { startLat: 38.7223, startLng: -9.1393, endLat: -22.9068, endLng: -43.1729, color: '#50B6E8' }, // Rio de Janeiro
+      { startLat: 38.7223, startLng: -9.1393, endLat: 9.0820, endLng: 8.6753, color: '#50B6E8' }, // Abuja
+      { startLat: 38.7223, startLng: -9.1393, endLat: 19.075984, endLng: 72.877656, color: '#50B6E8' }, // Mumbai
+      { startLat: 38.7223, startLng: -9.1393, endLat: 31.2304, endLng: 121.4737, color: '#50B6E8' }, // Xangai
+      { startLat: 38.7223, startLng: -9.1393, endLat: 22.3964, endLng: 114.1095, color: '#50B6E8' }, // Hong Kong
+      { startLat: 38.7223, startLng: -9.1393, endLat: 22.5726, endLng: 88.3639, color: '#50B6E8' }, // Calcutá
+      { startLat: 38.7223, startLng: -9.1393, endLat: 35.6892, endLng: 51.3890, color: '#50B6E8' } // Teerão
+    ];
 
-const arcsData = [
-  { startLat: 38.7223, startLng: -9.1393, endLat: 40.7128, endLng: -74.0060, color: '#50B6E8' }, // Nova Iorque
-  { startLat: 38.7223, startLng: -9.1393, endLat: 51.5074, endLng: -0.1278, color: '#50B6E8' }, // Londres
-  { startLat: 38.7223, startLng: -9.1393, endLat: 48.8566, endLng: 2.3522, color: '#50B6E8' }, // Paris
-  { startLat: 38.7223, startLng: -9.1393, endLat: 35.6895, endLng: 139.6917, color: '#50B6E8' }, // Tóquio
-  { startLat: 38.7223, startLng: -9.1393, endLat: 39.9042, endLng: 116.4074, color: '#50B6E8' }, // Pequim
-  { startLat: 38.7223, startLng: -9.1393, endLat: 55.7558, endLng: 37.6173, color: '#50B6E8' }, // Moscovo
-  { startLat: 38.7223, startLng: -9.1393, endLat: 52.5200, endLng: 13.4050, color: '#50B6E8' }, // Berlim
-  { startLat: 38.7223, startLng: -9.1393, endLat: 41.9028, endLng: 12.4964, color: '#50B6E8' }, // Roma
-  { startLat: 38.7223, startLng: -9.1393, endLat: 37.5665, endLng: 126.9780, color: '#50B6E8' }, // Seul
-  { startLat: 38.7223, startLng: -9.1393, endLat: 19.4326, endLng: -99.1332, color: '#50B6E8' }, // Cidade do México
-  { startLat: 38.7223, startLng: -9.1393, endLat: -23.5505, endLng: -46.6333, color: '#50B6E8' }, // São Paulo
-  { startLat: 38.7223, startLng: -9.1393, endLat: -34.6037, endLng: -58.3816, color: '#50B6E8' }, // Buenos Aires
-  { startLat: 38.7223, startLng: -9.1393, endLat: -33.8688, endLng: 151.2093, color: '#50B6E8' }, // Sydney
-  { startLat: 38.7223, startLng: -9.1393, endLat: -35.2809, endLng: 149.1300, color: '#50B6E8' }, // Canberra
-  { startLat: 38.7223, startLng: -9.1393, endLat: -1.2921, endLng: 36.8219, color: '#50B6E8' }, // Nairobi
-  { startLat: 38.7223, startLng: -9.1393, endLat: 30.0444, endLng: 31.2357, color: '#50B6E8' }, // Cairo
-  { startLat: 38.7223, startLng: -9.1393, endLat: 28.6139, endLng: 77.2090, color: '#50B6E8' }, // Nova Deli
-  { startLat: 38.7223, startLng: -9.1393, endLat: 1.3521, endLng: 103.8198, color: '#50B6E8' }, // Singapura
-  { startLat: 38.7223, startLng: -9.1393, endLat: 3.1390, endLng: 101.6869, color: '#50B6E8' }, // Kuala Lumpur
-  { startLat: 38.7223, startLng: -9.1393, endLat: 25.276987, endLng: 55.296249, color: '#50B6E8' }, // Dubai
-  { startLat: 38.7223, startLng: -9.1393, endLat: 24.7136, endLng: 46.6753, color: '#50B6E8' }, // Riade
-  { startLat: 38.7223, startLng: -9.1393, endLat: 32.0853, endLng: 34.7818, color: '#50B6E8' }, // Tel Aviv
-  { startLat: 38.7223, startLng: -9.1393, endLat: 59.3293, endLng: 18.0686, color: '#50B6E8' }, // Estocolmo
-  { startLat: 38.7223, startLng: -9.1393, endLat: 60.1699, endLng: 24.9384, color: '#50B6E8' }, // Helsínquia
-  { startLat: 38.7223, startLng: -9.1393, endLat: 59.9139, endLng: 10.7522, color: '#50B6E8' }, // Oslo
-  { startLat: 38.7223, startLng: -9.1393, endLat: 55.6761, endLng: 12.5683, color: '#50B6E8' }, // Copenhaga
-  { startLat: 38.7223, startLng: -9.1393, endLat: 50.1109, endLng: 8.6821, color: '#50B6E8' }, // Frankfurt
-  { startLat: 38.7223, startLng: -9.1393, endLat: 45.4642, endLng: 9.1900, color: '#50B6E8' }, // Milão
-  { startLat: 38.7223, startLng: -9.1393, endLat: 52.3676, endLng: 4.9041, color: '#50B6E8' }, // Amesterdão
-  { startLat: 38.7223, startLng: -9.1393, endLat: 50.8503, endLng: 4.3517, color: '#50B6E8' }, // Bruxelas
-  { startLat: 38.7223, startLng: -9.1393, endLat: 46.2044, endLng: 6.1432, color: '#50B6E8' }, // Genebra
-  { startLat: 38.7223, startLng: -9.1393, endLat: 25.2048, endLng: 55.2708, color: '#50B6E8' }, // Abu Dhabi
-  { startLat: 38.7223, startLng: -9.1393, endLat: 13.7563, endLng: 100.5018, color: '#50B6E8' }, // Banguecoque
-  { startLat: 38.7223, startLng: -9.1393, endLat: 14.5995, endLng: 120.9842, color: '#50B6E8' }, // Manila
-  { startLat: 38.7223, startLng: -9.1393, endLat: -6.2088, endLng: 106.8456, color: '#50B6E8' }, // Jacarta
-  { startLat: 38.7223, startLng: -9.1393, endLat: -33.9249, endLng: 18.4241, color: '#50B6E8' }, // Cidade do Cabo
-  { startLat: 38.7223, startLng: -9.1393, endLat: -26.2041, endLng: 28.0473, color: '#50B6E8' }, // Joanesburgo
-  { startLat: 38.7223, startLng: -9.1393, endLat: 35.6762, endLng: 139.6503, color: '#50B6E8' }, // Tóquio (centro urbano)
-  { startLat: 38.7223, startLng: -9.1393, endLat: 41.0082, endLng: 28.9784, color: '#50B6E8' }, // Istambul
-  { startLat: 38.7223, startLng: -9.1393, endLat: 6.5244, endLng: 3.3792, color: '#50B6E8' }, // Lagos
-  { startLat: 38.7223, startLng: -9.1393, endLat: -12.0464, endLng: -77.0428, color: '#50B6E8' }, // Lima
-  { startLat: 38.7223, startLng: -9.1393, endLat: 4.7110, endLng: -74.0721, color: '#50B6E8' }, // Bogotá
-  { startLat: 38.7223, startLng: -9.1393, endLat: -22.9068, endLng: -43.1729, color: '#50B6E8' }, // Rio de Janeiro
-  { startLat: 38.7223, startLng: -9.1393, endLat: 9.0820, endLng: 8.6753, color: '#50B6E8' }, // Abuja
-  { startLat: 38.7223, startLng: -9.1393, endLat: 19.075984, endLng: 72.877656, color: '#50B6E8' }, // Mumbai
-  { startLat: 38.7223, startLng: -9.1393, endLat: 31.2304, endLng: 121.4737, color: '#50B6E8' }, // Xangai
-  { startLat: 38.7223, startLng: -9.1393, endLat: 22.3964, endLng: 114.1095, color: '#50B6E8' }, // Hong Kong
-  { startLat: 38.7223, startLng: -9.1393, endLat: 22.5726, endLng: 88.3639, color: '#50B6E8' }, // Calcutá
-  { startLat: 38.7223, startLng: -9.1393, endLat: 35.6892, endLng: 51.3890, color: '#50B6E8' } // Teerão
-];
-
-
-
+    // --- Globo ---
     const Globe = new ThreeGlobe()
       .globeImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg')
       .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png')
       .arcsData(arcsData)
-      
-      
       .arcColor('color')
       .arcDashLength(0.4)
       .arcDashGap(4)
       .arcDashInitialGap(() => Math.random() * 5)
       .arcDashAnimateTime(1000);
 
-
-
-
-
-
-
-    // Setup renderer
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    // --- Renderer ---
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
     document.getElementById('globeViz').appendChild(renderer.domElement);
 
-    // Setup scene
+    // --- Cena e luzes ---
     const scene = new THREE.Scene();
     scene.add(Globe);
-    scene.add(new THREE.AmbientLight(0xFFFFFF, Math.PI));
-    scene.add(new THREE.DirectionalLight(0xFFFFFF, 0.6 * Math.PI));
+    scene.add(new THREE.AmbientLight(0xffffff, Math.PI));
+    scene.add(new THREE.DirectionalLight(0xffffff, 0.6 * Math.PI));
 
-    // Setup camera
-    const camera = new THREE.PerspectiveCamera();
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
+    // --- Câmara ---
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 500;
 
-    // Add camera controls
+    // --- Controlos ---
     const tbControls = new TrackballControls(camera, renderer.domElement);
     tbControls.minDistance = 101;
     tbControls.rotateSpeed = 5;
     tbControls.zoomSpeed = 0.8;
 
-// VELOCIDADE DE ROTAÇÃO
-    const ROTATE_SPEED = -0.002; 
+    // --- Resize Responsivo ---
+    function onWindowResize() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
 
-    // Kick-off renderer
-    (function animate() { // IIFE
-      // Rotação Automática: Gira o objeto Globe em torno do eixo Y
-      Globe.rotation.y += ROTATE_SPEED; 
+    window.addEventListener('resize', onWindowResize);
+    onWindowResize();
 
-      // Frame cycle
-      tbControls.update(); // COMENTADO/REMOVIDO
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-    })();
+    // --- Rotação automática ---
+    const ROTATE_SPEED = -0.002;
+
+    // --- Loop de animação ---
+    function animate() {
+      requestAnimationFrame(animate);
+      Globe.rotation.y += ROTATE_SPEED;
+      tbControls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
   </script>
 </body>
 </html>
