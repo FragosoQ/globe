@@ -190,7 +190,7 @@
     <div id="globeViz"></div>
     <img id="logo" src="https://static.wixstatic.com/media/a6967f_b1478a338afc4870879e1ba83f915dc5~mv2.png" alt="Logo Multiwasher">
     <img id="logo2" src="https://static.wixstatic.com/media/a6967f_691cf1aade3c471c816d1071b0c6ebdd~mv2.png" alt="Logo Somengil">
-   <!-- <img id="logo3" src="https://static.wixstatic.com/media/a6967f_e14aa13d109a43c68d9f6b2730aa23b2~mv2.png" alt="Logo Somengil">-->
+    <img id="logo3" src="https://static.wixstatic.com/media/a6967f_e14aa13d109a43c68d9f6b2730aa23b2~mv2.png" alt="Logo Somengil">
 
     <script type="module">
         import ThreeGlobe from 'https://esm.sh/three-globe?external=three';
@@ -282,16 +282,18 @@
         }));
 
         // 2. --- Preparar os Dados dos Rótulos (Labels) ---
-        const labelsData = arcsData.map(d => ({
-            lat: d.endLat,
-            lng: d.endLng,
-            text: d.name, // Usar o nome da capital (agora em Inglês) como texto
-            size: 1.8, // Tamanho do texto do rótulo
-            color: 'rgba(255, 255, 255, 1)', // Branco
-            fontFace: 'Arial', // Tipo de letra
-            labelDotRadius: 0.001, // Adiciona um pequeno ponto ao lado do texto
-            //labelDotOrientation: 'bottom' // Coloca o ponto abaixo do texto
-        }));
+const labelsData = arcsData.map(d => ({
+  lat: d.endLat,
+  lng: d.endLng,
+  text: d.name,
+  size: 1.8,
+  color: 'gray',
+  fontFace: 'Arial',
+  labelDotRadius: 0.001,
+  // Adicionando borda ao texto (se suportado)
+  strokeColor: '#000000', // cor do contorno
+  strokeWidth: 0.0005 // espessura do contorno
+}));
 
         // --- Globo ---
         const Globe = new ThreeGlobe()
@@ -316,6 +318,7 @@
             .labelDotRadius('labelDotRadius') // Raio do ponto de conexão
             .labelText('text') // O campo a usar para o texto
             .labelResolution(3); // Aumenta a resolução do texto para melhor qualidade
+            
 
 
         // --- Renderer ---
