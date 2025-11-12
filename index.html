@@ -1,0 +1,53 @@
+    // Gerar objetos de dados para cada país com efeito de propagação
+    const gData = countries.map(country => ({
+      lat: country.lat,
+      lng: country.lng,
+      maxR: 2,
+      propagationSpeed: 2, // velocidade do efeito
+      repeatPeriod: 2500 // período de repetição
+    }));
+
+    // Adiciona um efeito fixo em Lisboa se desejar
+    gData.push({
+      lat: 38.7169,
+      lng: -9.1399,
+      maxR: 5,
+      propagationSpeed: 2,
+      repeatPeriod: 3000
+    });
+
+    const colorInterpolator = t => `rgba(128, 223, 255,${1 - t})`;
+
+const Globe = new ThreeGlobe()
+  // Configuração da Terra e das anéis
+  .globeImageUrl('https://static.wixstatic.com/media/a6967f_42a4ffc4e3ba400385f034cb154d8cbd~mv2.png')
+  .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png')
+  .ringsData(gData)
+  .ringColor(() => colorInterpolator)
+  .ringMaxRadius('maxR')
+  .ringPropagationSpeed('propagationSpeed')
+  .ringRepeatPeriod('repeatPeriod')
+  
+  // Configuração dos arcos (exemplo)
+  .arcsData(arcsData)
+  .arcColor('color')
+  .arcDashLength(0.4)
+  .arcDashGap(4)
+  .arcDashInitialGap(() => Math.random() * 5)
+  .arcDashAnimateTime(1000)
+
+  // Configuração dos pontos
+//  .pointsData(pointsData)
+ // .pointAltitude(0.01)
+  //.pointColor('color')
+  //.pointRadius(0.6)
+
+  // Configuração dos labels
+  .labelsData(labelsData)
+  .labelColor('color')
+  .labelAltitude(0.01)
+  .labelSize('size')
+  .labelDotRadius('labelDotRadius')
+  .labelText('text')
+  .labelResolution(3);
+    
