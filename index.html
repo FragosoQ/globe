@@ -44,7 +44,7 @@
             border-radius: 5px;
         }
         #logo3 {
-            position: absolute; /* Inferior Direito */
+            position: absolute; /* Inferior Direito (Estilo mantido por coerência) */
             bottom: 30px;
             right: 30px;
             width: 150px;
@@ -127,21 +127,44 @@
             { startLat: 38.7223, startLng: -9.1393, endLat: 35.6892, endLng: 51.3890, color: '#50B6E8' } // Teerão
         ];
         
+        // --- Constantes de Pulsação ---
+        const INITIAL_POINT_SIZE = 0.4; 
+        const LISBON_SIZE = 0.25; 
+        
+        // Parâmetros de Pulsação de Diâmetro
+        const PULSE_MAX_SIZE = 0.05; 
+        const PULSE_SPEED = 0.01;
+        
+        // 🌟 NOVA CONSTANTE DE ALTITUDE 🌟
+        const PULSE_ALTITUDE = 0.06; // Altura máxima que os pontos flutuam (0.3 é uma boa altura)
+        
+        const LISBON_COLOR = '#FFFFFF'; 
+
         // 1. --- Preparar os Dados dos Pontos ---
-        // A partir dos dados dos arcos, extraímos as coordenadas finais (as capitais).
-        const pointsData = arcsData.map(d => ({
+        const pointsData = arcsData.map((d) => ({
             lat: d.endLat,
             lng: d.endLng,
-            size: 0.2, // Tamanho do ponto
-            color: '#0058E8' // Cor do ponto (Azul mais escuro para destaque)
+            // Propriedades necessárias para a animação
+            initialSize: INITIAL_POINT_SIZE,
+            size: INITIAL_POINT_SIZE,
+            
+            // 🌟 ADICIONAMOS A PROPRIEDADE ALTITUDE E PULSE FACTOR 🌟
+            altitude: 0, 
+            pulseFactor: Math.random(), 
+            color: '#0058E8'
         }));
         
-        // Adicionar Lisboa (a origem) também
+        // Adicionar Lisboa (a origem)
         pointsData.push({
             lat: 38.7223,
             lng: -9.1393,
-            size: 0.25, // Ligeiramente maior para a origem
-            color: '#FFFFFF' // Cor Branca para a origem (ou outra cor de destaque)
+            initialSize: LISBON_SIZE,
+            size: LISBON_SIZE,
+            
+            // 🌟 ADICIONAMOS A PROPRIEDADE ALTITUDE E PULSE FACTOR 🌟
+            altitude: 0,
+            pulseFactor: 0.05, 
+            color: LISBON_COLOR
         });
 
         // --- Globo ---
@@ -156,9 +179,13 @@
             .arcDashAnimateTime(1000)
             // 2. --- Configuração dos Pontos ---
             .pointsData(pointsData)
-            .pointAltitude(0) // Altura do ponto (se zero, fica na superfície)
-            .pointColor('color') // Cor do ponto
-            .pointRadius(0.6); // Raio do ponto (controla o tamanho visual no ecrã)
+            
+            
+            // 🌟 USAMOS A NOVA PROPRIEDADE 'altitude' 🌟
+            .pointAltitude('altitude') 
+            .pointColor('color')
+            .pointRadius('size') 
+            .pointsMerge(true); 
 
 
         // --- Renderer ---
@@ -200,6 +227,33 @@
         // --- Loop de animação ---
         function animate() {
             requestAnimationFrame(animate);
+
+            pointsData.forEach(d => {
+                // 1. Calcula o fator de pulso (de 0 a 1)
+                const pulse = (Math.sin(d.pulseFactor * Math.PI * 2) + 0) / 2; 
+                
+                // --- CÁLCULO DE DIÂMETRO (PULSAÇÃO) ---
+                const sizeRange = d.initialSize === LISBON_SIZE 
+                                ? PULSE_MAX_SIZE - LISBON_SIZE 
+                                : PULSE_MAX_SIZE - INITIAL_POINT_SIZE;
+
+                d.size = d.initialSize + (sizeRange * pulse);
+                
+                // 🌟 NOVO CÁLCULO DE ALTITUDE (FLUTUAÇÃO) 🌟
+                // Usamos o mesmo fator 'pulse' para sincronizar flutuação e pulsação do diâmetro
+                d.altitude = PULSE_ALTITUDE * pulse; 
+
+                // 3. Avança o fator de pulsação (dessincronizado)
+                d.pulseFactor += PULSE_SPEED * (d.initialSize === LISBON_SIZE ? 1.0 : (Math.random() * 0 + 0.05)); 
+                if (d.pulseFactor > 1) {
+                    d.pulseFactor -= 1;
+                }
+            });
+
+            // Chamamos .pointsData() novamente para notificar o ThreeGlobe da mudança (tamanho e altitude).
+            Globe.pointsData(pointsData); 
+
+            // Rotação e Renderização
             Globe.rotation.y += ROTATE_SPEED;
             tbControls.update();
             renderer.render(scene, camera);
