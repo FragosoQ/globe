@@ -129,29 +129,33 @@
         
         // --- Constantes de Pulsação ---
         const INITIAL_POINT_SIZE = 0.4; 
-        const LISBON_SIZE = 0.25; 
+        const LISBON_SIZE = 0.65; 
         
-        // Parâmetros de Pulsação de Diâmetro
-        const PULSE_MAX_SIZE = 0.05; 
-        const PULSE_SPEED = 0.01;
+        // Parâmetros de Pulsação de Diâmetro e Velocidade
+        const PULSE_MAX_SIZE = 0.50; 
+        const PULSE_SPEED = 0.02;
         
-        // 🌟 NOVA CONSTANTE DE ALTITUDE 🌟
-        const PULSE_ALTITUDE = 0.06; // Altura máxima que os pontos flutuam (0.3 é uma boa altura)
+        // Cores para a Transição (Fade)
+        const MIN_COLOR = new THREE.Color('#000000'); // Preto (cor de fundo)
+        const MAX_COLOR = new THREE.Color('#0058E8'); // Azul (cor de destaque)
         
         const LISBON_COLOR = '#FFFFFF'; 
+        const LISBON_COLOR_THREE = new THREE.Color(LISBON_COLOR);
+
+        // Função utilitária para converter cor THREE.Color para string hexadecimal
+        function colorToHex(color) {
+            return '#' + color.getHexString();
+        }
 
         // 1. --- Preparar os Dados dos Pontos ---
         const pointsData = arcsData.map((d) => ({
             lat: d.endLat,
             lng: d.endLng,
-            // Propriedades necessárias para a animação
             initialSize: INITIAL_POINT_SIZE,
-            size: INITIAL_POINT_SIZE,
-            
-            // 🌟 ADICIONAMOS A PROPRIEDADE ALTITUDE E PULSE FACTOR 🌟
-            altitude: 0, 
+            size: INITIAL_POINT_SIZE, 
+            color: colorToHex(MAX_COLOR),
+            // 🌟 FASE INICIAL ALEATÓRIA: Garante que o pulso começa dessincronizado
             pulseFactor: Math.random(), 
-            color: '#0058E8'
         }));
         
         // Adicionar Lisboa (a origem)
@@ -160,11 +164,8 @@
             lng: -9.1393,
             initialSize: LISBON_SIZE,
             size: LISBON_SIZE,
-            
-            // 🌟 ADICIONAMOS A PROPRIEDADE ALTITUDE E PULSE FACTOR 🌟
-            altitude: 0,
-            pulseFactor: 0.05, 
-            color: LISBON_COLOR
+            color: LISBON_COLOR,
+            pulseFactor: 0.5, 
         });
 
         // --- Globo ---
@@ -179,11 +180,9 @@
             .arcDashAnimateTime(1000)
             // 2. --- Configuração dos Pontos ---
             .pointsData(pointsData)
-            
-            
-            // 🌟 USAMOS A NOVA PROPRIEDADE 'altitude' 🌟
-            .pointAltitude('altitude') 
-            .pointColor('color')
+            // Altura fixa em 0 (sem flutuação)
+            .pointAltitude(0) 
+            .pointColor('color') 
             .pointRadius('size') 
             .pointsMerge(true); 
 
@@ -229,8 +228,9 @@
             requestAnimationFrame(animate);
 
             pointsData.forEach(d => {
-                // 1. Calcula o fator de pulso (de 0 a 1)
-                const pulse = (Math.sin(d.pulseFactor * Math.PI * 2) + 0) / 2; 
+                // 1. Calcula o fator de pulso (de 0 a 1). 
+                // 0 = Mínimo/Preto, 1 = Máximo/Azul.
+                const pulse = (Math.sin(d.pulseFactor * Math.PI * 2) + 1) / 2; 
                 
                 // --- CÁLCULO DE DIÂMETRO (PULSAÇÃO) ---
                 const sizeRange = d.initialSize === LISBON_SIZE 
@@ -239,18 +239,27 @@
 
                 d.size = d.initialSize + (sizeRange * pulse);
                 
-                // 🌟 NOVO CÁLCULO DE ALTITUDE (FLUTUAÇÃO) 🌟
-                // Usamos o mesmo fator 'pulse' para sincronizar flutuação e pulsação do diâmetro
-                d.altitude = PULSE_ALTITUDE * pulse; 
+                // --- TRANSIÇÃO DE COR (FADE) ---
+                if (d.initialSize !== LISBON_SIZE) { 
+                    // Interpola a cor entre MIN_COLOR (Preto) e MAX_COLOR (Azul)
+                    const currentColor = MIN_COLOR.clone().lerp(MAX_COLOR, pulse);
+                    d.color = colorToHex(currentColor);
+                } else {
+                    // Mantém Lisboa com pulsação branca
+                    const lisbonPulse = LISBON_COLOR_THREE.clone().lerp(MAX_COLOR, pulse * 0.5); 
+                    d.color = colorToHex(lisbonPulse);
+                }
+
 
                 // 3. Avança o fator de pulsação (dessincronizado)
-                d.pulseFactor += PULSE_SPEED * (d.initialSize === LISBON_SIZE ? 1.0 : (Math.random() * 0 + 0.05)); 
+                // 🌟 AJUSTE CHAVE: Aumentamos a variação de velocidade para uma dessincronização mais forte
+                d.pulseFactor += PULSE_SPEED * (d.initialSize === LISBON_SIZE ? 1.0 : (Math.random() * 0+ 0.05)); 
                 if (d.pulseFactor > 1) {
                     d.pulseFactor -= 1;
                 }
             });
 
-            // Chamamos .pointsData() novamente para notificar o ThreeGlobe da mudança (tamanho e altitude).
+            // Notifica o ThreeGlobe das mudanças (tamanho e cor)
             Globe.pointsData(pointsData); 
 
             // Rotação e Renderização
