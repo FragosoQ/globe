@@ -194,97 +194,101 @@
         import * as THREE from 'https://esm.sh/three';
         import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js?external=three';
 
-        // --- Dados de arcos (todas as capitais a partir de Lisboa) ---
-      const arcsData = [
-    // --- África ---
-    { startLat: 38.7223, startLng: -9.1393, endLat: -8.8383, endLng: 13.2344, color: '#50B6E8' }, // Angola (Luanda)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 14.9315, endLng: -23.5363, color: '#50B6E8' }, // Cabo Verde (Praia)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 30.0444, endLng: 31.2357, color: '#50B6E8' }, // Egípto/Egypt (Cairo)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 32.8872, endLng: 13.5132, color: '#50B6E8' }, // Líbia (Tripoli)
-    { startLat: 38.7223, startLng: -9.1393, endLat: -25.9653, endLng: 32.5892, color: '#50B6E8' }, // Moçambique (Maputo)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 0.3366, endLng: 6.7335, color: '#50B6E8' }, // São Tomé e Princepe (São Tomé)
+        // --- Dados de arcos (todas as capitais a partir de Lisboa), com nomes em Inglês ---
+        const arcsData = [
+            // [START_LAT, START_LNG, END_LAT, END_LNG, NAME_CAPITAL, COLOR]
+            // --- Africa ---
+            { startLat: 38.7223, startLng: -9.1393, endLat: -8.8383, endLng: 13.2344, name: 'Luanda', color: '#50B6E8' }, // Angola (Luanda)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 14.9315, endLng: -23.5363, name: 'Praia', color: '#50B6E8' }, // Cape Verde (Praia)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 30.0444, endLng: 31.2357, name: 'Cairo', color: '#50B6E8' }, // Egypt (Cairo)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 32.8872, endLng: 13.5132, name: 'Tripoli', color: '#50B6E8' }, // Libya (Tripoli)
+            { startLat: 38.7223, startLng: -9.1393, endLat: -25.9653, endLng: 32.5892, name: 'Maputo', color: '#50B6E8' }, // Mozambique (Maputo)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 0.3366, endLng: 6.7335, name: 'Sao Tome', color: '#50B6E8' }, // Sao Tome and Principe (Sao Tome)
 
-    // --- Américas ---
-    { startLat: 38.7223, startLng: -9.1393, endLat: -34.6037, endLng: -58.3816, color: '#50B6E8' }, // Argentina (Buenos Aires)
-    { startLat: 38.7223, startLng: -9.1393, endLat: -15.7942, endLng: -47.8825, color: '#50B6E8' }, // Brasil (Brasília)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 45.4215, endLng: -75.6972, color: '#50B6E8' }, // Canadá (Ottawa)
-    { startLat: 38.7223, startLng: -9.1393, endLat: -33.4489, endLng: -70.6693, color: '#50B6E8' }, // CHILE/Chile (Santiago)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 4.7110, endLng: -74.0721, color: '#50B6E8' }, // Colômbia (Bogotá)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 18.4861, endLng: -69.9308, color: '#50B6E8' }, // Dominican Republic (Santo Domingo)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 13.6929, endLng: -89.2182, color: '#50B6E8' }, // El Salvador (San Salvador)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 14.6349, endLng: -90.5069, color: '#50B6E8' }, // Guatemala (Cidade da Guatemala)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 14.0820, endLng: -87.2068, color: '#50B6E8' }, // Honduras (Tegucigalpa)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 19.4326, endLng: -99.1332, color: '#50B6E8' }, // México/Mexico (Cidade do México)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 8.9828, endLng: -79.5199, color: '#50B6E8' }, // Panamá (Cidade do Panamá)
-    { startLat: 38.7223, startLng: -9.1393, endLat: -12.0464, endLng: -77.0428, color: '#50B6E8' }, // Peru/Perú (Lima)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 38.9072, endLng: -77.0369, color: '#50B6E8' }, // United States/United States of America (Washington D.C.)
+            // --- Americas ---
+            { startLat: 38.7223, startLng: -9.1393, endLat: -34.6037, endLng: -58.3816, name: 'Buenos Aires', color: '#50B6E8' }, // Argentina (Buenos Aires)
+            { startLat: 38.7223, startLng: -9.1393, endLat: -15.7942, endLng: -47.8825, name: 'Brasilia', color: '#50B6E8' }, // Brazil (Brasilia)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 45.4215, endLng: -75.6972, name: 'Ottawa', color: '#50B6E8' }, // Canada (Ottawa)
+            { startLat: 38.7223, startLng: -9.1393, endLat: -33.4489, endLng: -70.6693, name: 'Santiago', color: '#50B6E8' }, // Chile (Santiago)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 4.7110, endLng: -74.0721, name: 'Bogota', color: '#50B6E8' }, // Colombia (Bogota)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 18.4861, endLng: -69.9308, name: 'Santo Domingo', color: '#50B6E8' }, // Dominican Republic (Santo Domingo)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 13.6929, endLng: -89.2182, name: 'San Salvador', color: '#50B6E8' }, // El Salvador (San Salvador)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 14.6349, endLng: -90.5069, name: 'Guatemala City', color: '#50B6E8' }, // Guatemala (Guatemala City)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 14.0820, endLng: -87.2068, name: 'Tegucigalpa', color: '#50B6E8' }, // Honduras (Tegucigalpa)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 19.4326, endLng: -99.1332, name: 'Mexico City', color: '#50B6E8' }, // Mexico (Mexico City)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 8.9828, endLng: -79.5199, name: 'Panama City', color: '#50B6E8' }, // Panama (Panama City)
+            { startLat: 38.7223, startLng: -9.1393, endLat: -12.0464, endLng: -77.0428, name: 'Lima', color: '#50B6E8' }, // Peru (Lima)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 38.9072, endLng: -77.0369, name: 'Washington D.C.', color: '#50B6E8' }, // United States (Washington D.C.)
 
-    // --- Ásia e Médio Oriente ---
-    { startLat: 38.7223, startLng: -9.1393, endLat: 24.6333, endLng: 46.7167, color: '#50B6E8' }, // Arábia Saudita/Saudi Arabia (Riade)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 39.9042, endLng: 116.4074, color: '#50B6E8' }, // CHINA (Pequim)
-    { startLat: 38.7223, startLng: -9.1393, endLat: -6.2088, endLng: 106.8456, color: '#50B6E8' }, // Indonésia (Jacarta)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 35.6892, endLng: 51.3890, color: '#50B6E8' }, // Irão (Teerão)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 31.7683, endLng: 35.2137, color: '#50B6E8' }, // Israel (Jerusalém)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 31.9566, endLng: 35.9457, color: '#50B6E8' }, // Jordan/Jordania (Aman)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 37.5665, endLng: 126.9780, color: '#50B6E8' }, // Korea (Seul)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 29.3786, endLng: 47.9903, color: '#50B6E8' }, // Kuwait (Cidade do Kuwait)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 33.8938, endLng: 35.5018, color: '#50B6E8' }, // Lebanon/Libano (Beirute)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 47.8864, endLng: 106.9057, color: '#50B6E8' }, // Mongólia (Ulan Bator)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 14.5995, endLng: 120.9842, color: '#50B6E8' }, // Philippines (Manila)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 25.3548, endLng: 51.1839, color: '#50B6E8' }, // Qatar (Doha)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 25.0330, endLng: 121.5654, color: '#50B6E8' }, // Taiwan (Taipé)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 24.4539, endLng: 54.3773, color: '#50B6E8' }, // United Arab Emirates (Abu Dhabi)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 41.2665, endLng: 69.2162, color: '#50B6E8' }, // Uzbekistan (Tashkent)
+            // --- Asia and Middle East ---
+            { startLat: 38.7223, startLng: -9.1393, endLat: 24.6333, endLng: 46.7167, name: 'Riyadh', color: '#50B6E8' }, // Saudi Arabia (Riyadh)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 39.9042, endLng: 116.4074, name: 'Beijing', color: '#50B6E8' }, // China (Beijing)
+            { startLat: 38.7223, startLng: -9.1393, endLat: -6.2088, endLng: 106.8456, name: 'Jakarta', color: '#50B6E8' }, // Indonesia (Jakarta)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 35.6892, endLng: 51.3890, name: 'Tehran', color: '#50B6E8' }, // Iran (Tehran)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 31.7683, endLng: 35.2137, name: 'Jerusalem', color: '#50B6E8' }, // Israel (Jerusalem)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 31.9566, endLng: 35.9457, name: 'Amman', color: '#50B6E8' }, // Jordan (Amman)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 37.5665, endLng: 126.9780, name: 'Seoul', color: '#50B6E8' }, // Korea (Seoul)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 29.3786, endLng: 47.9903, name: 'Kuwait City', color: '#50B6E8' }, // Kuwait (Kuwait City)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 33.8938, endLng: 35.5018, name: 'Beirut', color: '#50B6E8' }, // Lebanon (Beirut)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 47.8864, endLng: 106.9057, name: 'Ulaanbaatar', color: '#50B6E8' }, // Mongolia (Ulaanbaatar)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 14.5995, endLng: 120.9842, name: 'Manila', color: '#50B6E8' }, // Philippines (Manila)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 25.3548, endLng: 51.1839, name: 'Doha', color: '#50B6E8' }, // Qatar (Doha)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 25.0330, endLng: 121.5654, name: 'Taipei', color: '#50B6E8' }, // Taiwan (Taipei)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 24.4539, endLng: 54.3773, name: 'Abu Dhabi', color: '#50B6E8' }, // United Arab Emirates (Abu Dhabi)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 41.2665, endLng: 69.2162, name: 'Tashkent', color: '#50B6E8' }, // Uzbekistan (Tashkent)
 
-    // --- Europa e Oceânia ---
-    { startLat: 38.7223, startLng: -9.1393, endLat: -35.2809, endLng: 149.1300, color: '#50B6E8' }, // Austrália (Camberra)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 48.2082, endLng: 16.3738, color: '#50B6E8' }, // Áustria (Viena)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 50.8503, endLng: 4.3517, color: '#50B6E8' }, // Belgium (Bruxelas)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 45.8150, endLng: 15.9819, color: '#50B6E8' }, // Croatia (Zagreb)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 35.1856, endLng: 33.3823, color: '#50B6E8' }, // Cyprus (Nicósia)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 55.6761, endLng: 12.5683, color: '#50B6E8' }, // Denmark (Copenhaga)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 40.4168, endLng: -3.7038, color: '#50B6E8' }, // España/Espanha (Madrid)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 59.4370, endLng: 24.7536, color: '#50B6E8' }, // Estónia (Tallinn)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 60.1699, endLng: 24.9384, color: '#50B6E8' }, // Finland (Helsínquia)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 48.8566, endLng: 2.3522, color: '#50B6E8' }, // França/France (Paris)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 52.5200, endLng: 13.4050, color: '#50B6E8' }, // Germany (Berlim)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 37.9838, endLng: 23.7275, color: '#50B6E8' }, // Greece (Atenas)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 47.4979, endLng: 19.0402, color: '#50B6E8' }, // Hungary (Budapeste)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 41.9028, endLng: 12.4964, color: '#50B6E8' }, // Itália/Italy (Roma)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 54.6872, endLng: 25.2797, color: '#50B6E8' }, // Lituânia/Lithuania (Vilnius)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 49.6116, endLng: 6.1319, color: '#50B6E8' }, // Luxembourg/Luxemburgo (Luxemburgo)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 52.3676, endLng: 4.9041, color: '#50B6E8' }, // Netherlands (Amesterdão)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 54.7000, endLng: -6.0000, color: '#50B6E8' }, // Northern Ireland (Belfast)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 59.9139, endLng: 10.7522, color: '#50B6E8' }, // Norway (Oslo)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 52.2297, endLng: 21.0122, color: '#50B6E8' }, // Poland (Varsóvia)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 38.7223, endLng: -9.1393, color: '#50B6E8' }, // Portugal (Lisboa, para consistência, mas é o ponto de partida)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 53.9045, endLng: 27.5615, color: '#50B6E8' }, // Republic of Belarus (Minsk)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 44.4268, endLng: 26.1025, color: '#50B6E8' }, // Romania (Bucareste)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 55.7558, endLng: 37.6173, color: '#50B6E8' }, // Russian Federation (Moscovo)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 48.1486, endLng: 17.1077, color: '#50B6E8' }, // Slovakia (Bratislava)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 46.0569, endLng: 14.5058, color: '#50B6E8' }, // Slovenia (Liubliana)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 59.3293, endLng: 18.0686, color: '#50B6E8' }, // Sweden (Estocolmo)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 46.8182, endLng: 8.2275, color: '#50B6E8' }, // Switzerland (Berna)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 51.5074, endLng: -0.1278, color: '#50B6E8' }, // United Kingdom (Londres)
-    { startLat: 38.7223, startLng: -9.1393, endLat: 50.0755, endLng: 14.4378, color: '#50B6E8' }  // Czech Republic/Czechia (Praga)
-];
+            // --- Europe and Oceania ---
+            { startLat: 38.7223, startLng: -9.1393, endLat: -35.2809, endLng: 149.1300, name: 'Canberra', color: '#50B6E8' }, // Australia (Canberra)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 48.2082, endLng: 16.3738, name: 'Vienna', color: '#50B6E8' }, // Austria (Vienna)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 50.8503, endLng: 4.3517, name: 'Brussels', color: '#50B6E8' }, // Belgium (Brussels)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 45.8150, endLng: 15.9819, name: 'Zagreb', color: '#50B6E8' }, // Croatia (Zagreb)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 35.1856, endLng: 33.3823, name: 'Nicosia', color: '#50B6E8' }, // Cyprus (Nicosia)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 55.6761, endLng: 12.5683, name: 'Copenhagen', color: '#50B6E8' }, // Denmark (Copenhagen)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 40.4168, endLng: -3.7038, name: 'Madrid', color: '#50B6E8' }, // Spain (Madrid)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 59.4370, endLng: 24.7536, name: 'Tallinn', color: '#50B6E8' }, // Estonia (Tallinn)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 60.1699, endLng: 24.9384, name: 'Helsinki', color: '#50B6E8' }, // Finland (Helsinki)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 48.8566, endLng: 2.3522, name: 'Paris', color: '#50B6E8' }, // France (Paris)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 52.5200, endLng: 13.4050, name: 'Berlin', color: '#50B6E8' }, // Germany (Berlin)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 37.9838, endLng: 23.7275, name: 'Athens', color: '#50B6E8' }, // Greece (Athens)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 47.4979, endLng: 19.0402, name: 'Budapest', color: '#50B6E8' }, // Hungary (Budapest)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 41.9028, endLng: 12.4964, name: 'Rome', color: '#50B6E8' }, // Italy (Rome)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 54.6872, endLng: 25.2797, name: 'Vilnius', color: '#50B6E8' }, // Lithuania (Vilnius)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 49.6116, endLng: 6.1319, name: 'Luxembourg', color: '#50B6E8' }, // Luxembourg (Luxembourg)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 52.3676, endLng: 4.9041, name: 'Amsterdam', color: '#50B6E8' }, // Netherlands (Amsterdam)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 54.7000, endLng: -6.0000, name: 'Belfast', color: '#50B6E8' }, // Northern Ireland (Belfast)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 59.9139, endLng: 10.7522, name: 'Oslo', color: '#50B6E8' }, // Norway (Oslo)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 52.2297, endLng: 21.0122, name: 'Warsaw', color: '#50B6E8' }, // Poland (Warsaw)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 38.7223, endLng: -9.1393, name: 'Lisbon', color: '#50B6E8' }, // Portugal (Lisbon, the starting point)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 53.9045, endLng: 27.5615, name: 'Minsk', color: '#50B6E8' }, // Belarus (Minsk)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 44.4268, endLng: 26.1025, name: 'Bucharest', color: '#50B6E8' }, // Romania (Bucharest)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 55.7558, endLng: 37.6173, name: 'Moscow', color: '#50B6E8' }, // Russian Federation (Moscow)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 48.1486, endLng: 17.1077, name: 'Bratislava', color: '#50B6E8' }, // Slovakia (Bratislava)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 46.0569, endLng: 14.5058, name: 'Ljubljana', color: '#50B6E8' }, // Slovenia (Ljubljana)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 59.3293, endLng: 18.0686, name: 'Stockholm', color: '#50B6E8' }, // Sweden (Stockholm)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 46.8182, endLng: 8.2275, name: 'Bern', color: '#50B6E8' }, // Switzerland (Bern)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 51.5074, endLng: -0.1278, name: 'London', color: '#50B6E8' }, // United Kingdom (London)
+            { startLat: 38.7223, startLng: -9.1393, endLat: 50.0755, endLng: 14.4378, name: 'Prague', color: '#50B6E8' } // Czechia (Prague)
+        ];
 
         // 1. --- Preparar os Dados dos Pontos ---
-        // A partir dos dados dos arcos, extraímos as coordenadas finais (as capitais).
         const pointsData = arcsData.map(d => ({
             lat: d.endLat,
             lng: d.endLng,
-            size: 0.2, // Tamanho do ponto
-            color: '#0058E8' // Cor do ponto (Azul mais escuro para destaque)
+            size: d.name === 'Lisbon' ? 0.25 : 0.2, // Ligeiramente maior para a origem
+            color: d.name === 'Lisbon' ? '#FFFFFF' : '#0058E8' // Branca para a origem, Azul escuro para as capitais
         }));
 
-        // Adicionar Lisboa (a origem) também
-        pointsData.push({
-            lat: 38.7223,
-            lng: -9.1393,
-            size: 0.25, // Ligeiramente maior para a origem
-            color: '#FFFFFF' // Cor Branca para a origem (ou outra cor de destaque)
-        });
+        // 2. --- Preparar os Dados dos Rótulos (Labels) ---
+        const labelsData = arcsData.map(d => ({
+            lat: d.endLat,
+            lng: d.endLng,
+            text: d.name, // Usar o nome da capital (agora em Inglês) como texto
+            size: 0.8, // Tamanho do texto do rótulo
+            color: 'rgba(255, 255, 255, 1)', // Branco
+            fontFace: 'Arial', // Tipo de letra
+            labelDotRadius: 0.1, // Adiciona um pequeno ponto ao lado do texto
+            labelDotOrientation: 'bottom' // Coloca o ponto abaixo do texto
+        }));
 
         // --- Globo ---
         const Globe = new ThreeGlobe()
@@ -296,11 +300,19 @@
             .arcDashGap(4)
             .arcDashInitialGap(() => Math.random() * 5)
             .arcDashAnimateTime(1000)
-            // 2. --- Configuração dos Pontos ---
+            // 3. --- Configuração dos Pontos ---
             .pointsData(pointsData)
             .pointAltitude(0.01) // Altura do ponto (se zero, fica na superfície)
             .pointColor('color') // Cor do ponto
-            .pointRadius(0.6); // Raio do ponto (controla o tamanho visual no ecrã)
+            .pointRadius(0.6) // Raio do ponto (controla o tamanho visual no ecrã)
+            // 4. --- Configuração dos Rótulos (Labels) ---
+            .labelsData(labelsData)
+            .labelColor('color') // Cor do texto do rótulo (branco)
+            .labelAltitude(0.01) // Coloca o rótulo ligeiramente acima da superfície
+            .labelSize('size') // Tamanho do rótulo
+            .labelDotRadius('labelDotRadius') // Raio do ponto de conexão
+            .labelText('text') // O campo a usar para o texto
+            .labelResolution(3); // Aumenta a resolução do texto para melhor qualidade
 
 
         // --- Renderer ---
