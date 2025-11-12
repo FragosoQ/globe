@@ -52,6 +52,109 @@
             z-index: 10;
             border-radius: 5px;
         }
+
+        /* --- Estilos para o Toggle Button --- */
+        #toggle-container {
+            position: absolute;
+            top: 30px; /* Alinhamento com os logos */
+            left: 50%;
+            transform: translateX(-50%); /* Centraliza horizontalmente */
+            z-index: 20; /* Garante que está sobre o globo */
+            background-color: #222; /* Fundo do container (Preto não totalmente preto) */
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            width: auto; /* Adapta-se ao conteúdo */
+        }
+
+        .toggle-btn {
+            position: relative;
+            z-index: 1;
+            padding: 8px 15px;
+            cursor: pointer;
+            color: #000000; /* Cor do texto não-ativo */
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            transition: color 0.3s ease;
+            
+            /* FORÇAR CENTRALIZAÇÃO DO TEXTO DENTRO DO BOTÃO */
+            display: flex; 
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center; /* Centraliza verticalmente */
+            min-width: 140px; /* Garante que ambos os textos tenham largura suficiente */
+        }
+
+        .toggle-btn:hover {
+            color: #fff;
+        }
+
+        .toggle-input {
+            display: none; /* Esconde o radio button nativo */
+        }
+
+        /* O fundo cinza (ativo) é aplicado ao span .toggle-slider */
+        #daily-report:checked ~ .toggle-slider {
+            transform: translateX(0);
+        }
+
+        #connected-machines:checked ~ .toggle-slider {
+            transform: translateX(100%); 
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            height: calc(100% - 10px);
+            width: calc(50% - 5px); /* Metade do container menos o padding do container */
+            background-color: #777; /* Cinza ativado */
+            border-radius: 20px;
+            transition: transform 0.3s ease;
+            z-index: 0;
+            pointer-events: none; /* Garante que não interfere no clique do label */
+        }
+
+        /* Cores do texto quando ATIVO (sobre o cinza) */
+        #daily-report:checked + .toggle-btn-label {
+            color: #000; 
+            z-index: 1;
+        }
+
+        #connected-machines:checked + .toggle-btn-label {
+            color: #000; 
+            z-index: 1;
+        }
+
+        /* --- Estilos para a Caixa de Informação de Equipamentos --- */
+        #info-box {
+            position: absolute;
+            top: 50%; /* Centraliza verticalmente */
+            right: 50px; /* Distância da margem direita */
+            transform: translateY(-50%); /* Ajuste para centralização vertical exata */
+            z-index: 15; /* Acima do globo, abaixo dos logos */
+            background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */
+            border-radius: 10px;
+            padding: 20px;
+            color: #fff;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            width: 180px; /* Largura fixa para a caixa */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #info-box .number {
+            font-size: 3em; /* Tamanho grande para o número */
+            font-weight: bold;
+            color: #50B6E8; /* Cor azul para destaque */
+            line-height: 1; /* Garante espaçamento adequado */
+            margin-bottom: 5px;
+        }
+
+        #info-box .label {
+            font-size: 1.2em;
+            color: #ccc;
+        }
     </style>
 
     <script type="importmap">
@@ -65,10 +168,27 @@
 </head>
 
 <body>
+    <div id="toggle-container">
+        <input type="radio" id="daily-report" name="report-type" class="toggle-input" checked>
+        <label for="daily-report" class="toggle-btn toggle-btn-label">Daily Report</label>
+
+        <input type="radio" id="connected-machines" name="report-type" class="toggle-input">
+        <label for="connected-machines" class="toggle-btn toggle-btn-label">Connected Machines</label>
+
+        <span class="toggle-slider"></span>
+    </div>
+
+    <div id="info-box">
+        <div class="number">304</div>
+        <div class="label">Equipments</div>
+        <div class="label">Connected</div>
+    </div>
+
     <div id="globeViz"></div>
     <img id="logo" src="https://static.wixstatic.com/media/a6967f_b1478a338afc4870879e1ba83f915dc5~mv2.png" alt="Logo Multiwasher">
     <img id="logo2" src="https://static.wixstatic.com/media/a6967f_691cf1aade3c471c816d1071b0c6ebdd~mv2.png" alt="Logo Somengil">
-    
+    <img id="logo3" src="https://static.wixstatic.com/media/a6967f_e14aa13d109a43c68d9f6b2730aa23b2~mv2.png" alt="Logo Somengil">
+
     <script type="module">
         import ThreeGlobe from 'https://esm.sh/three-globe?external=three';
         import * as THREE from 'https://esm.sh/three';
@@ -126,7 +246,7 @@
             { startLat: 38.7223, startLng: -9.1393, endLat: 22.5726, endLng: 88.3639, color: '#50B6E8' }, // Calcutá
             { startLat: 38.7223, startLng: -9.1393, endLat: 35.6892, endLng: 51.3890, color: '#50B6E8' } // Teerão
         ];
-        
+
         // 1. --- Preparar os Dados dos Pontos ---
         // A partir dos dados dos arcos, extraímos as coordenadas finais (as capitais).
         const pointsData = arcsData.map(d => ({
@@ -135,7 +255,7 @@
             size: 0.2, // Tamanho do ponto
             color: '#0058E8' // Cor do ponto (Azul mais escuro para destaque)
         }));
-        
+
         // Adicionar Lisboa (a origem) também
         pointsData.push({
             lat: 38.7223,
@@ -156,7 +276,7 @@
             .arcDashAnimateTime(1000)
             // 2. --- Configuração dos Pontos ---
             .pointsData(pointsData)
-            .pointAltitude(0) // Altura do ponto (se zero, fica na superfície)
+            .pointAltitude(0.01) // Altura do ponto (se zero, fica na superfície)
             .pointColor('color') // Cor do ponto
             .pointRadius(0.6); // Raio do ponto (controla o tamanho visual no ecrã)
 
