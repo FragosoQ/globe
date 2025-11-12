@@ -1,3 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Globo Responsivo - Capitais</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            /* ✅ CORREÇÃO AQUI: 
+               Usamos background (shorthand) para garantir que o gradiente 
+               (que é um tipo de background-image) é aplicado corretamente. */
+            background: radial-gradient(circle at center, #000814 0%, #000000 100%);
+        }
+        #globeViz {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        #logo {
+            position: absolute; /* Superior Esquerdo */
+            top: 30px;
+            left: 30px;
+            width: 250px;
+            height: auto;
+            z-index: 10;
+            border-radius: 5px;
+        }
+        #logo2 {
+            position: absolute; /* Superior Direito */
+            top: 30px;
+            right: 30px;
+            width: 200px;
+            height: auto;
+            z-index: 10;
+            border-radius: 5px;
+        }
+        #logo3 {
+            position: absolute; /* Inferior Direito */
+            bottom: 30px;
+            right: 30px;
+            width: 150px;
+            height: auto;
+            z-index: 10;
+            border-radius: 5px;
+        }
+
+        /* --- Estilos para o Toggle Button --- */
+        #toggle-container {
+            position: absolute;
+            top: 30px; /* Alinhamento com os logos */
+            left: 50%;
+            transform: translateX(-50%); /* Centraliza horizontalmente */
+            z-index: 20; /* Garante que está sobre o globo */
+            background-color: #222; /* Fundo do container (Preto não totalmente preto) */
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            width: auto; /* Adapta-se ao conteúdo */
+        }
+
+        .toggle-btn {
+            position: relative;
+            z-index: 1;
+            padding: 8px 15px;
+            cursor: pointer;
+            color: #000000; /* Cor do texto não-ativo */
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            transition: color 0.3s ease;
+            
+            /* FORÇAR CENTRALIZAÇÃO DO TEXTO DENTRO DO BOTÃO */
+            display: flex; 
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center; /* Centraliza verticalmente */
+            min-width: 140px; /* Garante que ambos os textos tenham largura suficiente */
+        }
+
+        .toggle-btn:hover {
+            color: #fff;
+        }
+
+        .toggle-input {
+            display: none; /* Esconde o radio button nativo */
+        }
+
+        /* O fundo cinza (ativo) é aplicado ao span .toggle-slider */
+        #daily-report:checked ~ .toggle-slider {
+            transform: translateX(0);
+        }
+
+        #connected-machines:checked ~ .toggle-slider {
+            transform: translateX(100%); 
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            height: calc(100% - 10px);
+            width: calc(50% - 5px); /* Metade do container menos o padding do container */
+            background-color: #777; /* Cinza ativado */
+            border-radius: 20px;
+            transition: transform 0.3s ease;
+            z-index: 0;
+            pointer-events: none; /* Garante que não interfere no clique do label */
+        }
+
+        /* Cores do texto quando ATIVO (sobre o cinza) */
+        #daily-report:checked + .toggle-btn-label {
+            color: #000; 
+            z-index: 1;
+        }
+
+        #connected-machines:checked + .toggle-btn-label {
+            color: #000; 
+            z-index: 1;
+        }
+
+        /* --- Estilos para a Caixa de Informação de Equipamentos --- */
+        #info-box {
+            position: absolute;
+            top: 50%; /* Centraliza verticalmente */
+            right: 250px; /* Distância da margem direita */
+            transform: translateY(-50%); /* Ajuste para centralização vertical exata */
+            z-index: 15; /* Acima do globo, abaixo dos logos */
+            background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */
+            border-radius: 10px;
+            padding: 20px;
+            color: #fff;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            width: 180px; /* Largura fixa para a caixa */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #info-box .number {
+            font-size: 3em; /* Tamanho grande para o número */
+            font-weight: bold;
+            color: #50B6E8; /* Cor azul para destaque */
+            line-height: 1; /* Garante espaçamento adequado */
+            margin-bottom: 5px;
+        }
+
+        #info-box .label {
+            font-size: 1.2em;
+            color: #ccc;
+        }
+    </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://esm.sh/three",
+                "three/": "https://esm.sh/three/"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="toggle-container">
+        <input type="radio" id="daily-report" name="report-type" class="toggle-input" checked>
+        <label for="daily-report" class="toggle-btn toggle-btn-label">Daily Report</label>
+
+        <input type="radio" id="connected-machines" name="report-type" class="toggle-input">
+        <label for="connected-machines" class="toggle-btn toggle-btn-label">Connected Machines</label>
+
+        <span class="toggle-slider"></span>
+    </div>
+
+    <div id="info-box">
+        <div class="number">304</div>
+        <div class="label">Equipments</div>
+        <div class="label">Connected</div>
+    </div>
+
+    <div id="globeViz"></div>
+    <img id="logo" src="https://static.wixstatic.com/media/a6967f_b1478a338afc4870879e1ba83f915dc5~mv2.png" alt="Logo Multiwasher">
+    <img id="logo2" src="https://static.wixstatic.com/media/a6967f_691cf1aade3c471c816d1071b0c6ebdd~mv2.png" alt="Logo Somengil">
+    <img id="logo3" src="https://static.wixstatic.com/media/a6967f_e14aa13d109a43c68d9f6b2730aa23b2~mv2.png" alt="Logo Somengil">
+
+    <script type="module">
+        import ThreeGlobe from 'https://esm.sh/three-globe?external=three';
+        import * as THREE from 'https://esm.sh/three';
+        import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js?external=three';
+
+    // Lista de países com suas coordenadas
+    const countries = [
+      { name: 'Portugal', lat: 38.7169, lng: -9.1399 },
+      { name: 'França', lat: 46.6034, lng: 1.8883 },
+      { name: 'Espanha', lat: 40.4637, lng: -3.7492 },
+      { name: 'Brasil', lat: -14.2350, lng: -51.9253 },
+      { name: 'Angola', lat: -12.6392, lng: 18.1332 },
+      { name: 'Arábia Saudita', lat: 23.8859, lng: 45.0792 },
+      { name: 'Argentina', lat: -38.4161, lng: -63.6167 },
+      { name: 'Austrália', lat: -25.2744, lng: 133.7751 },
+      { name: 'Áustria', lat: 47.5162, lng: 14.5501 },
+      { name: 'Belgium', lat: 50.5039, lng: 4.4699 },
+      { name: 'Canadá', lat: 56.1304, lng: -106.3468 },
+      { name: 'CHILE', lat: -35.6751, lng: -71.5429 },
+      { name: 'China', lat: 35.8617, lng: 104.1954 },
+      { name: 'Colômbia', lat: 4.5709, lng: -74.2973 },
+      { name: 'Croatia', lat: 45.1, lng: 15.2 },
+      { name: 'Cyprus', lat: 35.1264, lng: 33.4299 },
+      { name: 'Czech Republic', lat: 49.8175, lng: 15.4730 },
+      { name: 'Dinamarca', lat: 56.2639, lng: 9.5018 },
+      { name: 'Egito', lat: 26.8206, lng: 30.8025 },
+      { name: 'Espanha', lat: 40.4637, lng: -3.7492 },
+      { name: 'Estônia', lat: 58.5953, lng: 25.0136 },
+      { name: 'Finlândia', lat: 61.9241, lng: 25.7482 },
+      { name: 'França', lat: 46.6034, lng: 1.8883 },
+      { name: 'Alemanha', lat: 51.1657, lng: 10.4515 },
+      { name: 'Grécia', lat: 39.0742, lng: 21.8243 },
+      { name: 'Honduras', lat: 15.2000, lng: -86.2419 },
+      { name: 'Hungria', lat: 47.1625, lng: 19.5033 },
+      { name: 'Indonésia', lat: -0.7893, lng: 113.9213 },
+      { name: 'Irã', lat: 32.4279, lng: 53.6880 },
+      { name: 'Israel', lat: 31.0461, lng: 34.8516 },
+      { name: 'Itália', lat: 41.8719, lng: 12.5674 },
+      { name: 'Jordânia', lat: 30.5852, lng: 36.2384 },
+      { name: 'Korea', lat: 35.9078, lng: 127.7669 },
+      { name: 'Kuwait', lat: 29.3759, lng: 47.9774 },
+      { name: 'Líbano', lat: 33.8547, lng: 35.8623 },
+      { name: 'Líbia', lat: 26.3351, lng: 17.2283 },
+      { name: 'Lituânia', lat: 55.1694, lng: 23.8813 },
+      { name: 'Luxemburgo', lat: 49.6117, lng: 6.13 },
+      { name: 'México', lat: 23.6345, lng: -102.5528 },
+      { name: 'Moçambique', lat: -18.6657, lng: 35.5296 },
+      { name: 'Mongólia', lat: 46.8625, lng: 103.8467 },
+      { name: 'Holanda', lat: 52.3784, lng: 4.9000 },
+      { name: 'Noruega', lat: 60.4720, lng: 8.4689 },
+      { name: 'Panamá', lat: 8.5370, lng: -80.7821 },
+      { name: 'Peru', lat: -9.19, lng: -75.0152 },
+      { name: 'Filipinas', lat: 12.8797, lng: 121.774 },
+      { name: 'Polônia', lat: 51.9194, lng: 19.1451 },
+      { name: 'Qatar', lat: 25.276987, lng: 51.520008 },
+      { name: 'Romênia', lat: 45.9432, lng: 24.9668 },
+      { name: 'Rússia', lat: 61.5240, lng: 105.3188 },
+      { name: 'Arábia Saudita', lat: 23.8859, lng: 45.0792 },
+      { name: 'Espanha', lat: 40.4637, lng: -3.7492 },
+      { name: 'Suécia', lat: 60.1282, lng: 18.6435 },
+      { name: 'Suíça', lat: 46.8182, lng: 8.2275 },
+      { name: 'Taiwan', lat: 23.6978, lng: 120.9605 },
+      { name: 'Emirados Árabes', lat: 23.4241, lng: 53.8478 },
+      { name: 'Reino Unido', lat: 55.3781, lng: -3.4360 },
+      { name: 'Estados Unidos', lat: 37.0902, lng: -95.7129 },
+      { name: 'Uzbequistão', lat: 41.3775, lng: 64.5853 },
+    ];
+
+
+
+
+
+        // --- Dados de arcos (todas as capitais a partir de Lisboa), com nomes em Inglês ---
+       const arcsData = [
+        // [START_LAT, START_LNG, END_LAT, END_LNG, SIGLA_PAÍS, COLOR]
+        // --- Africa ---
+        { startLat: 38.7223, startLng: -9.1393, endLat: -8.8383, endLng: 13.2344, name: 'AO', color: '#50B6E8' }, // Angola (Luanda)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 14.9315, endLng: -23.5363, name: 'CV', color: '#50B6E8' }, // Cabo Verde (Praia)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 30.0444, endLng: 31.2357, name: 'EG', color: '#50B6E8' }, // Egito (Cairo)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 32.8872, endLng: 13.5132, name: 'LY', color: '#50B6E8' }, // Líbia (Tripoli)
+        { startLat: 38.7223, startLng: -9.1393, endLat: -25.9653, endLng: 32.5892, name: 'MZ', color: '#50B6E8' }, // Moçambique (Maputo)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 0.3366, endLng: 6.7335, name: 'ST', color: '#50B6E8' }, // São Tomé e Príncipe (Sao Tome)
+
+        // --- Americas ---
+        { startLat: 38.7223, startLng: -9.1393, endLat: -34.6037, endLng: -58.3816, name: 'AR', color: '#50B6E8' }, // Argentina (Buenos Aires)
+        { startLat: 38.7223, startLng: -9.1393, endLat: -15.7942, endLng: -47.8825, name: 'BR', color: '#50B6E8' }, // Brasil (Brasilia)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 45.4215, endLng: -75.6972, name: 'CA', color: '#50B6E8' }, // Canadá (Ottawa)
+        { startLat: 38.7223, startLng: -9.1393, endLat: -33.4489, endLng: -70.6693, name: 'CL', color: '#50B6E8' }, // Chile (Santiago)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 4.7110, endLng: -74.0721, name: 'CO', color: '#50B6E8' }, // Colômbia (Bogota)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 18.4861, endLng: -69.9308, name: 'DO', color: '#50B6E8' }, // República Dominicana (Santo Domingo)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 13.6929, endLng: -89.2182, name: 'SV', color: '#50B6E8' }, // El Salvador (San Salvador)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 14.6349, endLng: -90.5069, name: 'GT', color: '#50B6E8' }, // Guatemala (Guatemala City)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 14.0820, endLng: -87.2068, name: 'HN', color: '#50B6E8' }, // Honduras (Tegucigalpa)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 19.4326, endLng: -99.1332, name: 'MX', color: '#50B6E8' }, // México (Mexico City)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 8.9828, endLng: -79.5199, name: 'PA', color: '#50B6E8' }, // Panamá (Panama City)
+        { startLat: 38.7223, startLng: -9.1393, endLat: -12.0464, endLng: -77.0428, name: 'PE', color: '#50B6E8' }, // Peru (Lima)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 38.9072, endLng: -77.0369, name: 'US', color: '#50B6E8' }, // Estados Unidos (Washington D.C.)
+
+        // --- Asia and Middle East ---
+        { startLat: 38.7223, startLng: -9.1393, endLat: 24.6333, endLng: 46.7167, name: 'SA', color: '#50B6E8' }, // Arábia Saudita (Riyadh)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 39.9042, endLng: 116.4074, name: 'CN', color: '#50B6E8' }, // China (Beijing)
+        { startLat: 38.7223, startLng: -9.1393, endLat: -6.2088, endLng: 106.8456, name: 'ID', color: '#50B6E8' }, // Indonésia (Jakarta)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 35.6892, endLng: 51.3890, name: 'IR', color: '#50B6E8' }, // Irã (Tehran)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 31.7683, endLng: 35.2137, name: 'IL', color: '#50B6E8' }, // Israel (Jerusalem)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 31.9566, endLng: 35.9457, name: 'JO', color: '#50B6E8' }, // Jordânia (Amman)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 37.5665, endLng: 126.9780, name: 'KR', color: '#50B6E8' }, // Coreia do Sul (Seoul)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 29.3786, endLng: 47.9903, name: 'KW', color: '#50B6E8' }, // Kuwait (Kuwait City)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 33.8938, endLng: 35.5018, name: 'LB', color: '#50B6E8' }, // Líbano (Beirut)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 47.8864, endLng: 106.9057, name: 'MN', color: '#50B6E8' }, // Mongólia (Ulaanbaatar)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 14.5995, endLng: 120.9842, name: 'PH', color: '#50B6E8' }, // Filipinas (Manila)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 25.3548, endLng: 51.1839, name: 'QA', color: '#50B6E8' }, // Catar (Doha)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 25.0330, endLng: 121.5654, name: 'TW', color: '#50B6E8' }, // Taiwan (Taipei)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 24.4539, endLng: 54.3773, name: 'AE', color: '#50B6E8' }, // Emirados Árabes Unidos (Abu Dhabi)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 41.2665, endLng: 69.2162, name: 'UZ', color: '#50B6E8' }, // Uzbequistão (Tashkent)
+
+        // --- Europe and Oceania ---
+        { startLat: 38.7223, startLng: -9.1393, endLat: -35.2809, endLng: 149.1300, name: 'AU', color: '#50B6E8' }, // Austrália (Canberra)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 48.2082, endLng: 16.3738, name: 'AT', color: '#50B6E8' }, // Áustria (Vienna)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 50.8503, endLng: 4.3517, name: 'BE', color: '#50B6E8' }, // Bélgica (Brussels)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 45.8150, endLng: 15.9819, name: 'HR', color: '#50B6E8' }, // Croácia (Zagreb)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 35.1856, endLng: 33.3823, name: 'CY', color: '#50B6E8' }, // Chipre (Nicosia)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 55.6761, endLng: 12.5683, name: 'DK', color: '#50B6E8' }, // Dinamarca (Copenhagen)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 40.4168, endLng: -3.7038, name: 'ES', color: '#50B6E8' }, // Espanha (Madrid)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 59.4370, endLng: 24.7536, name: 'EE', color: '#50B6E8' }, // Estónia (Tallinn)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 60.1699, endLng: 24.9384, name: 'FI', color: '#50B6E8' }, // Finlândia (Helsinki)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 48.8566, endLng: 2.3522, name: 'FR', color: '#50B6E8' }, // França (Paris)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 52.5200, endLng: 13.4050, name: 'DE', color: '#50B6E8' }, // Alemanha (Berlin)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 37.9838, endLng: 23.7275, name: 'GR', color: '#50B6E8' }, // Grécia (Athens)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 47.4979, endLng: 19.0402, name: 'HU', color: '#50B6E8' }, // Hungria (Budapest)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 41.9028, endLng: 12.4964, name: 'IT', color: '#50B6E8' }, // Itália (Rome)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 54.6872, endLng: 25.2797, name: 'LT', color: '#50B6E8' }, // Lituânia (Vilnius)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 49.6116, endLng: 6.1319, name: 'LU', color: '#50B6E8' }, // Luxemburgo (Luxembourg)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 52.3676, endLng: 4.9041, name: 'NL', color: '#50B6E8' }, // Holanda (Amsterdam)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 54.7000, endLng: -6.0000, name: 'GB', color: '#50B6E8' }, // Reino Unido (Belfast) (Usando GB, embora NI seja UK/GB)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 59.9139, endLng: 10.7522, name: 'NO', color: '#50B6E8' }, // Noruega (Oslo)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 52.2297, endLng: 21.0122, name: 'PL', color: '#50B6E8' }, // Polónia (Warsaw)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 38.7223, endLng: -9.1393, name: 'PT', color: '#50B6E8' }, // Portugal (Lisbon, the starting point)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 53.9045, endLng: 27.5615, name: 'BY', color: '#50B6E8' }, // Bielorrússia (Minsk)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 44.4268, endLng: 26.1025, name: 'RO', color: '#50B6E8' }, // Roménia (Bucharest)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 55.7558, endLng: 37.6173, name: 'RU', color: '#50B6E8' }, // Rússia (Moscow)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 48.1486, endLng: 17.1077, name: 'SK', color: '#50B6E8' }, // Eslováquia (Bratislava)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 46.0569, endLng: 14.5058, name: 'SI', color: '#50B6E8' }, // Eslovénia (Ljubljana)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 59.3293, endLng: 18.0686, name: 'SE', color: '#50B6E8' }, // Suécia (Stockholm)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 46.8182, endLng: 8.2275, name: 'CH', color: '#50B6E8' }, // Suíça (Bern)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 51.5074, endLng: -0.1278, name: 'GB', color: '#50B6E8' }, // Reino Unido (London)
+        { startLat: 38.7223, startLng: -9.1393, endLat: 50.0755, endLng: 14.4378, name: 'CZ', color: '#50B6E8' } // Chéquia (Prague)
+    ];
+
+        // 1. --- Preparar os Dados dos Pontos ---
+        const pointsData = arcsData.map(d => ({
+            lat: d.endLat,
+            lng: d.endLng,
+            size: d.name === 'Lisbon' ? 0.25 : 0.2, // Ligeiramente maior para a origem
+            color: d.name === 'Lisbon' ? '#FFFFFF' : '#0058E8' // Branca para a origem, Azul escuro para as capitais
+        }));
+
+        // 2. --- Preparar os Dados dos Rótulos (Labels) ---
+        const labelsData = arcsData.map(d => ({
+            lat: d.endLat,
+            lng: d.endLng,
+            text: d.name, // Usar o nome da capital (agora em Inglês) como texto
+            size: 1.8, // Tamanho do texto do rótulo
+            color: 'rgba(255, 255, 255, 1)', // Branco
+            fontFace: 'Arial', // Tipo de letra
+            labelDotRadius: 0.001, // Adiciona um pequeno ponto ao lado do texto
+            //labelDotOrientation: 'bottom' // Coloca o ponto abaixo do texto
+        }));
     // Gerar objetos de dados para cada país com efeito de propagação
     const gData = countries.map(country => ({
       lat: country.lat,
@@ -51,3 +412,53 @@ const Globe = new ThreeGlobe()
   .labelText('text')
   .labelResolution(3);
     
+
+
+        // --- Renderer ---
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+        document.getElementById('globeViz').appendChild(renderer.domElement);
+
+        // --- Cena e luzes ---
+        const scene = new THREE.Scene();
+        scene.add(Globe);
+        scene.add(new THREE.AmbientLight(0xffffff, Math.PI));
+        scene.add(new THREE.DirectionalLight(0xf5f5f5, 4 * Math.PI));
+
+        // --- Câmara ---
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 500;
+
+        // --- Controlos ---
+        const tbControls = new TrackballControls(camera, renderer.domElement);
+        tbControls.minDistance = 101;
+            tbControls.rotateSpeed = 5;
+            tbControls.zoomSpeed = 0.8;
+
+        // --- Resize Responsivo ---
+        function onWindowResize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        }
+
+        window.addEventListener('resize', onWindowResize);
+        onWindowResize();
+
+        // --- Rotação automática ---
+        const ROTATE_SPEED = -0.002;
+
+        // --- Loop de animação ---
+        function animate() {
+            requestAnimationFrame(animate);
+            Globe.rotation.y += ROTATE_SPEED;
+            tbControls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
