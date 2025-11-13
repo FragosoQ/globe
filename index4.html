@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Globo Responsivo - Capitais</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        /* Fundo da Página (Web): Gradiente suave que se harmoniza com a cena 3D */
+        background: radial-gradient(circle at center, #191722 0.5%, #000000 100%);
+    }
+    #globeViz {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+    #logo {
+        position: absolute; /* Superior Esquerdo */
+        top: 30px;
+        left: 30px;
+        width: 250px;
+        height: auto;
+        z-index: 10;
+        border-radius: 5px;
+    }
+    #logo2 {
+        position: absolute; /* Superior Direito */
+        top: 30px;
+        right: 30px;
+        width: 200px;
+        height: auto;
+        z-index: 10;
+        border-radius: 5px;
+    }
+    #logo3 {
+        position: absolute; /* Inferior Direito */
+        bottom: 30px;
+        right: 30px;
+        width: 150px;
+        height: auto;
+        z-index: 10;
+        border-radius: 5px;
+    }
+
+    /* --- Estilos para o Toggle Button --- */
+    #toggle-container {
+        position: absolute;
+        top: 30px; /* Alinhamento com os logos */
+        left: 50%;
+        transform: translateX(-50%); /* Centraliza horizontalmente */
+        z-index: 20; /* Garante que está sobre o globo */
+        background-color: #222; /* Fundo do container (Preto não totalmente preto) */
+        border-radius: 20px;
+        padding: 5px;
+        display: flex;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        width: auto; /* Adapta-se ao conteúdo */
+    }
+
+    .toggle-btn {
+        position: relative;
+        z-index: 1;
+        padding: 8px 15px;
+        cursor: pointer;
+        color: #000000; /* Cor do texto não-ativo */
+        font-weight: bold;
+        font-family: Arial, sans-serif;
+        transition: color 0.3s ease;
+        display: flex; 
+        justify-content: center; /* Centraliza horizontalmente */
+        align-items: center; /* Centraliza verticalmente */
+        min-width: 140px; /* Garante que ambos os textos tenham largura suficiente */
+    }
+
+    .toggle-btn:hover {
+        color: #fff;
+    }
+
+    .toggle-input {
+        display: none; /* Esconde o radio button nativo */
+    }
+
+    /* O fundo cinza (ativo) é aplicado ao span .toggle-slider */
+    #daily-report:checked ~ .toggle-slider {
+        transform: translateX(0);
+    }
+
+    #connected-machines:checked ~ .toggle-slider {
+        transform: translateX(100%); 
+    }
+
+    .toggle-slider {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        height: calc(100% - 10px);
+        width: calc(50% - 5px);
+        background-color: #777;
+        border-radius: 20px;
+        transition: transform 0.3s ease;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* Cores do texto quando ATIVO */
+    #daily-report:checked + .toggle-btn-label {
+        color: #000; 
+        z-index: 1;
+    }
+
+    #connected-machines:checked + .toggle-btn-label {
+        color: #000; 
+        z-index: 1;
+    }
+
+    /* --- Estilos para a Caixa de Informação de Equipamentos --- */
+    #info-box {
+        position: absolute;
+        top: 50%;
+        right: 15%;
+        transform: translateY(-50%);
+        z-index: 15;
+        padding: 20px;
+        color: #fff;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        width: 180px;
+    }
+
+    #info-box .number {
+        font-size: 3em;
+        font-weight: bold;
+        color: #ffffff;
+        line-height: 1;
+        margin-bottom: 5px;
+    }
+
+    #info-box .label {
+        font-size: 1.2em;
+        color: #ffffff;
+    }
+    
+    /* --- Estilos para o Card do Gráfico de Pizza --- */
+    #pie-chart-card {
+        position: absolute;
+        bottom: 80px;
+        left: 5%;
+        z-index: 15;
+        border-radius: 10px;
+        padding: 15px;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        width: 350px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        background: transparent;
+    }
+
+    #pie-chart-card h2 {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+        color: #f5f5f5;
+    }
+
+    /* Tamanho do Canvas */
+    #canvas-container {
+        width: 250px;
+        height: 150px;
+        margin-right: 20px;
+    }
+
+    /* Legenda */
+    #legend {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        width: 20px;
+    }
+    #legend h2 {
+        margin: 0 0 10px 0;
+        font-size: 1.2em;
+        color: #f5f5f5;
+    }
+
+    /* Lista de detalhes na legenda */
+    #chart-details {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        font-size: 0.9em;
+    }
+    #chart-details li {
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+        
+    /* Wrapper que envolve gráfico e legenda */
+    #pie-chart-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: start;
+        width: 100%;
+    }
+        
+    /* Estilo para o Quadrado de Cor */
+    .color-swatch {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin-right: 8px;
+        border-radius: 2px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        flex-shrink: 0; 
+    }
+        
+    .label-text {
+        flex-grow: 1;
+    }
+
+    .chart-percentage {
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    #chart-details li:last-child {
+        border-bottom: none;
+    }
+
+    /* --- Botão Play/Pause --- */
+    #play-pause-container {
+        position: absolute;
+        bottom: 30px; 
+        left: 5%;
+        z-index: 20;
+    }
+
+    #playPauseBtn {
+        padding: 10px 20px;
+        background-color: rgba(222, 214, 213,0.1);
+        color: gray;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        font-family: Arial, sans-serif;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #playPauseBtn:hover {
+        background-color: ;
+    }
+</style>
+
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://esm.sh/three",
+        "three/": "https://esm.sh/three/"
+    }
+}
+</script>
+</head>
+
+<body>
+<div id="toggle-container">
+    <input type="radio" id="daily-report" name="report-type" class="toggle-input" checked>
+    <label for="daily-report" class="toggle-btn toggle-btn-label">Daily Report</label>
+
+    <input type="radio" id="connected-machines" name="report-type" class="toggle-input">
+    <label for="connected-machines" class="toggle-btn toggle-btn-label">Connected Machines</label>
+
+    <span class="toggle-slider"></span>
+</div>
+
+<div id="info-box">
+    <div class="number">304</div>
+    <div class="label">Equipments</div>
+    <div class="label">Connected</div>
+</div>
+
+<div id="pie-chart-card">
+    <h2></h2>
+    <div id="canvas-container">
+        <canvas id="machineChart"></canvas>
+    </div>
+  
+    <ul id="chart-details">
+        <li><span class="color-swatch" style="background-color: #808080;"></span> <span class="label-text">EUROPA</span> <span class="chart-percentage">73.5%</span></li>
+        <li><span class="color-swatch" style="background-color: #D3D3D3;"></span> <span class="label-text">AMÉRICA</span> <span class="chart-percentage">17.9%</span></li>
+        <li><span class="color-swatch" style="background-color: #FFFFFF;"></span> <span class="label-text">ÁFRICA</span> <span class="chart-percentage">0.5%</span></li>
+        <li><span class="color-swatch" style="background-color: #505050;"></span> <span class="label-text">ÁSIA</span> <span class="chart-percentage">7.1%</span></li>
+        <li><span class="color-swatch" style="background-color: #312f31;"></span> <span class="label-text">OCEÂNIA</span> <span class="chart-percentage">1.0%</span></li>
+    </ul>
+</div>
+
+<div id="play-pause-container">
+    <button id="playPauseBtn"> Pausar Rotação</button>
+</div>
+
+<div id="globeViz"></div>
+<img id="logo" src="https://static.wixstatic.com/media/a6967f_b1478a338afc4870879e1ba83f915dc5~mv2.png" alt="Logo Multiwasher">
+<img id="logo2" src="https://static.wixstatic.com/media/a6967f_691cf1aade3c471c816d1071b0c6ebdd~mv2.png" alt="Logo Somengil">
+
+<script type="module">
+import ThreeGlobe from 'https://esm.sh/three-globe?external=three';
+import * as THREE from 'three';
+import { TrackballControls } from 'https://esm.sh/three/examples/jsm/controls/TrackballControls.js';
+
+// --- Dados de arcos (todas as capitais a partir de Lisboa), com nomes em Inglês ---
+const arcsData = [
+    // [START_LAT, START_LNG, END_LAT, END_LNG, SIGLA_PAÍS, COLOR]
+    // ... (mantém seus dados existentes)
+    { startLat: 38.7223, startLng: -9.1393, endLat: -34.6037, endLng: -58.3816, name: 'AR', color: '#50B6E8' }, // Argentina
+    { startLat: 38.7223, startLng: -9.1393, endLat: -15.7942, endLng: -47.8825, name: 'BR', color: '#50B6E8' }, // Brasil
+    { startLat: 38.7223, startLng: -9.1393, endLat: 45.4215, endLng: -75.6972, name: 'CA', color: '#50B6E8' }, // Canadá
+    { startLat: 38.7223, startLng: -9.1393, endLat: -33.4489, endLng: -70.6693, name: 'CL', color: '#50B6E8' }, // Chile
+    { startLat: 38.7223, startLng: -9.1393, endLat: 4.7110, endLng: -74.0721, name: 'CO', color: '#50B6E8' }, // Colômbia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 18.4861, endLng: -69.9308, name: 'DO', color: '#50B6E8' }, // República Dominicana
+    { startLat: 38.7223, startLng: -9.1393, endLat: 13.6929, endLng: -89.2182, name: 'SV', color: '#50B6E8' }, // El Salvador
+    { startLat: 38.7223, startLng: -9.1393, endLat: 14.6349, endLng: -90.5069, name: 'GT', color: '#50B6E8' }, // Guatemala
+    { startLat: 38.7223, startLng: -9.1393, endLat: 14.0820, endLng: -87.2068, name: 'HN', color: '#50B6E8' }, // Honduras
+    { startLat: 38.7223, startLng: -9.1393, endLat: 19.4326, endLng: -99.1332, name: 'MX', color: '#50B6E8' }, // México
+    { startLat: 38.7223, startLng: -9.1393, endLat: 8.9828, endLng: -79.5199, name: 'PA', color: '#50B6E8' }, // Panamá
+    { startLat: 38.7223, startLng: -9.1393, endLat: -12.0464, endLng: -77.0428, name: 'PE', color: '#50B6E8' }, // Peru
+    { startLat: 38.7223, startLng: -9.1393, endLat: 38.9072, endLng: -77.0369, name: 'US', color: '#50B6E8' }, // EUA
+
+    // --- Ásia e Oriente Médio ---
+    { startLat: 38.7223, startLng: -9.1393, endLat: 24.6333, endLng: 46.7167, name: 'SA', color: '#50B6E8' }, // Arábia Saudita
+    { startLat: 38.7223, startLng: -9.1393, endLat: 39.9042, endLng: 116.4074, name: 'CN', color: '#50B6E8' }, // China
+    { startLat: 38.7223, startLng: -9.1393, endLat: -6.2088, endLng: 106.8456, name: 'ID', color: '#50B6E8' }, // Indonésia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 35.6892, endLng: 51.3890, name: 'IR', color: '#50B6E8' }, // Irã
+    { startLat: 38.7223, startLng: -9.1393, endLat: 31.7683, endLng: 35.2137, name: 'IL', color: '#50B6E8' }, // Israel
+    { startLat: 38.7223, startLng: -9.1393, endLat: 31.9566, endLng: 35.9457, name: 'JO', color: '#50B6E8' }, // Jordânia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 37.5665, endLng: 126.9780, name: 'KR', color: '#50B6E8' }, // Coreia do Sul
+    { startLat: 38.7223, startLng: -9.1393, endLat: 29.3786, endLng: 47.9903, name: 'KW', color: '#50B6E8' }, // Kuwait
+    { startLat: 38.7223, startLng: -9.1393, endLat: 33.8938, endLng: 35.5018, name: 'LB', color: '#50B6E8' }, // Líbano
+    { startLat: 38.7223, startLng: -9.1393, endLat: 47.8864, endLng: 106.9057, name: 'MN', color: '#50B6E8' }, // Mongólia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 14.5995, endLng: 120.9842, name: 'PH', color: '#50B6E8' }, // Filipinas
+    { startLat: 38.7223, startLng: -9.1393, endLat: 25.3548, endLng: 51.1839, name: 'QA', color: '#50B6E8' }, // Catar
+    { startLat: 38.7223, startLng: -9.1393, endLat: 25.0330, endLng: 121.5654, name: 'TW', color: '#50B6E8' }, // Taiwan
+    { startLat: 38.7223, startLng: -9.1393, endLat: 24.4539, endLng: 54.3773, name: 'AE', color: '#50B6E8' }, // Emirados
+    { startLat: 38.7223, startLng: -9.1393, endLat: 41.2665, endLng: 69.2162, name: 'UZ', color: '#50B6E8' }, // Uzbequistão
+
+    // --- Europa e Oceania ---
+    { startLat: 38.7223, startLng: -9.1393, endLat: -35.2809, endLng: 149.1300, name: 'AU', color: '#50B6E8' }, // Austrália
+    { startLat: 38.7223, startLng: -9.1393, endLat: 48.2082, endLng: 16.3738, name: 'AT', color: '#50B6E8' }, // Áustria
+    { startLat: 38.7223, startLng: -9.1393, endLat: 50.8503, endLng: 4.3517, name: 'BE', color: '#50B6E8' }, // Bélgica
+    { startLat: 38.7223, startLng: -9.1393, endLat: 45.8150, endLng: 15.9819, name: 'HR', color: '#50B6E8' }, // Croácia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 35.1856, endLng: 33.3823, name: 'CY', color: '#50B6E8' }, // Chipre
+    { startLat: 38.7223, startLng: -9.1393, endLat: 55.6761, endLng: 12.5683, name: 'DK', color: '#50B6E8' }, // Dinamarca
+    { startLat: 38.7223, startLng: -9.1393, endLat: 40.4168, endLng: -3.7038, name: 'ES', color: '#50B6E8' }, // Espanha
+    { startLat: 38.7223, startLng: -9.1393, endLat: 59.4370, endLng: 24.7536, name: 'EE', color: '#50B6E8' }, // Estônia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 60.1699, endLng: 24.9384, name: 'FI', color: '#50B6E8' }, // Finlândia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 48.8566, endLng: 2.3522, name: 'FR', color: '#50B6E8' }, // França
+    { startLat: 38.7223, startLng: -9.1393, endLat: 52.5200, endLng: 13.4050, name: 'DE', color: '#50B6E8' }, // Alemanha
+    { startLat: 38.7223, startLng: -9.1393, endLat: 37.9838, endLng: 23.7275, name: 'GR', color: '#50B6E8' }, // Grécia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 47.4979, endLng: 19.0402, name: 'HU', color: '#50B6E8' }, // Hungria
+    { startLat: 38.7223, startLng: -9.1393, endLat: 41.9028, endLng: 12.4964, name: 'IT', color: '#50B6E8' }, // Itália
+    { startLat: 38.7223, startLng: -9.1393, endLat: 54.6872, endLng: 25.2797, name: 'LT', color: '#50B6E8' }, // Lituânia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 49.6116, endLng: 6.1319, name: 'LU', color: '#50B6E8' }, // Luxemburgo
+    { startLat: 38.7223, startLng: -9.1393, endLat: 52.3676, endLng: 4.9041, name: 'NL', color: '#50B6E8' }, // Holanda
+    { startLat: 38.7223, startLng: -9.1393, endLat: 54.7000, endLng: -6.0000, name: 'GB', color: '#50B6E8' }, // Reino Unido
+    { startLat: 38.7223, startLng: -9.1393, endLat: 59.9139, endLng: 10.7522, name: 'NO', color: '#50B6E8' }, // Noruega
+    { startLat: 38.7223, startLng: -9.1393, endLat: 52.2297, endLng: 21.0122, name: 'PL', color: '#50B6E8' }, // Polônia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 38.7223, endLng: -9.1393, name: 'PT', color: '#50B6E8' }, // Portugal
+    { startLat: 38.7223, startLng: -9.1393, endLat: 53.9045, endLng: 27.5615, name: 'BY', color: '#50B6E8' }, // Bielorrússia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 44.4268, endLng: 26.1025, name: 'RO', color: '#50B6E8' }, // Romênia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 55.7558, endLng: 37.6173, name: 'RU', color: '#50B6E8' }, // Rússia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 48.1486, endLng: 17.1077, name: 'SK', color: '#50B6E8' }, // Eslováquia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 46.0569, endLng: 14.5058, name: 'SI', color: '#50B6E8' }, // Eslovênia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 59.3293, endLng: 18.0686, name: 'SE', color: '#50B6E8' }, // Suécia
+    { startLat: 38.7223, startLng: -9.1393, endLat: 46.8182, endLng: 8.2275, name: 'CH', color: '#50B6E8' }  // Suíça
+];
+
+// --- Função para gerar pontos aleatórios na Europa ---
+function generateEuropeanPoints(count) {
+  const points = [];
+  for (let i = 0; i < count; i++) {
+    const lat = Math.random() * (70 - 35) + 35; // entre 35 e 70
+    const lng = Math.random() * (40 - (-25)) + (-25); // entre -25 e 40
+    points.push({
+      lat: lat,
+      lng: lng,
+      size: 0.2,
+      color: '#FF0000' // Vermelho
+    });
+  }
+  return points;
+}
+
+// Gerar 50 pontos aleatórios na Europa
+const europePoints = generateEuropeanPoints(50);
+
+// --- Seus pontos existentes ---
+const pointsData = [
+    {
+        lat: 38.7223,
+        lng: -9.1393,
+        size: 0.25,
+        color: '#FFFFFF'
+    },
+    // ... (adicione aqui os demais pontos existentes do seu código se desejar)
+];
+
+// --- Combine os pontos existentes com os pontos aleatórios ---
+const totalPointsData = [...pointsData, ...europePoints];
+
+// --- Preparar os Dados dos Rótulos (Labels) ---
+const labelsData = arcsData.map(d => ({
+    lat: d.endLat,
+    lng: d.endLng,
+    text: d.name,
+    size: 0.001,
+    color: 'gray',
+    fontFace: 'Arial',
+    labelDotRadius: 0.001,
+    strokeColor: '#000000',
+    strokeWidth: 0.0005
+}));
+
+// --- Globo ---
+const Globe = new ThreeGlobe()
+    .globeImageUrl('https://static.wixstatic.com/media/a6967f_16bbf730301b4406b4d3618da337edf7~mv2.jpg')
+    .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png')
+    .arcsData(arcsData)
+    .arcColor('color')
+    .arcDashLength(0.4)
+    .arcDashGap(4)
+    .arcDashInitialGap(() => Math.random() * 5)
+    .arcDashAnimateTime(1000)
+    // Configuração dos pontos
+    .pointsData(totalPointsData)
+    .pointAltitude(0)
+    .pointColor('color')
+    .pointRadius(0.6)
+    // Configuração dos rótulos
+    .labelsData(labelsData)
+    .labelColor('color')
+    .labelAltitude(0.01)
+    .labelSize('size')
+    .labelDotRadius('labelDotRadius')
+    .labelText('text')
+    .labelResolution(3);
+
+// --- Renderer ---
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+document.getElementById('globeViz').appendChild(renderer.domElement);
+
+// --- Cena e luzes ---
+const scene = new THREE.Scene();
+const createRadialGradientTexture = function() {
+    const size = 256;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createRadialGradient(size/2, size/2, 0.5, size/2, size/2, size/2);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    const texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+};
+const gradientTexture = createRadialGradientTexture();
+scene.background = gradientTexture;
+
+// Adiciona o globo e luzes
+scene.add(Globe);
+scene.add(new THREE.AmbientLight(0xffffff, Math.PI));
+scene.add(new THREE.DirectionalLight(0xf5f5f5, 4 * Math.PI));
+
+// --- Câmara ---
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.x = -50;
+camera.position.y = 200;
+camera.position.z = 350;
+camera.rotation.x = THREE.MathUtils.degToRad(20);
+Globe.rotation.x = THREE.MathUtils.degToRad(-38.7223);
+Globe.rotation.y = THREE.MathUtils.degToRad(9.1393);
+
+// --- Controlos ---
+const tbControls = new TrackballControls(camera, renderer.domElement);
+tbControls.minDistance = 101;
+tbControls.rotateSpeed = 5;
+tbControls.zoomSpeed = 0.8;
+
+// --- Resize ---
+function onWindowResize() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', onWindowResize);
+onWindowResize();
+
+// --- Rotação automática ---
+const ROTATE_SPEED = -0.005;
+let isRotating = true;
+
+function initializeChart() {
+    const ctx = document.getElementById('machineChart').getContext('2d');
+    const machineData = {
+        labels: ['EUROPA', 'AMÉRICA', 'ÁFRICA', 'ÁSIA', 'Oceânia'],
+        datasets: [{
+            data: [73.5, 17.9, 0.5, 7.1, 1.0],
+            backgroundColor: [
+                'rgba(128, 128, 128, 0.8)',
+                'rgba(211, 211, 211, 0.8)',
+                'rgba(255, 255, 255, 0.8)',
+                'rgba(80, 80, 80, 0.8)',
+                'rgba(49,47,49, 0.8)'
+            ],
+            hoverBackgroundColor: [
+                'rgba(153, 153, 153, 1.0)',
+                'rgba(255, 255, 255, 1.0)',
+                'rgba(204, 204, 204, 1.0)',
+                'rgba(102, 102, 102, 1.0)'
+            ],
+            borderColor: 'rgba(255, 255, 255, 0.2)',
+            borderWidth: 1
+        }]
+    };
+    const config = {
+        type: 'pie',
+        data: machineData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed !== null) {
+                                const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                const value = context.parsed;
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                label += percentage + '%';
+                            }
+                            return label;
+                        }
+                    },
+                    bodyColor: '#333',
+                    titleColor: '#333',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    borderColor: '#888',
+                    borderWidth: 1
+                },
+                title: { display: false }
+            }
+        }
+    };
+    new Chart(ctx, config);
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    if (isRotating) {
+        Globe.rotation.y += ROTATE_SPEED;
+    }
+    tbControls.update();
+    renderer.render(scene, camera);
+}
+
+// --- Play/Pause ---
+document.addEventListener('DOMContentLoaded', () => {
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    if (playPauseBtn) {
+        playPauseBtn.addEventListener('click', () => {
+            isRotating = !isRotating;
+            if (isRotating) {
+                playPauseBtn.innerHTML = 'Pausar Rotação';
+            } else {
+                playPauseBtn.innerHTML = 'Iniciar Rotação';
+            }
+        });
+    }
+});
+
+// Inicia a animação e o gráfico
+animate();
+initializeChart();
+
+</script>
+</body>
+</html>
