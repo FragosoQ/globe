@@ -12,8 +12,8 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            /* GRADIENTE RADIAL CSS (Fundo da página) */
-            background: radial-gradient(circle at center, #000814 0%, #000000 100%);
+            /* Fundo da Página (Web): Gradiente suave que se harmoniza com a cena 3D */
+            background: radial-gradient(circle at center, #1a2330 0%, #0d1217 100%);
         }
         #globeViz {
             position: absolute;
@@ -132,10 +132,10 @@
         #info-box {
             position: absolute;
             top: 50%; /* Centraliza verticalmente */
-            right: 10%; /* Distância da margem direita */
+            right: 30px; /* Distância da margem direita */
             transform: translateY(-50%); /* Ajuste para centralização vertical exata */
             z-index: 15; /* Acima do globo, abaixo dos logos */
-            /*background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */
+            background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */
             border-radius: 10px;
             padding: 20px;
             color: #fff;
@@ -165,7 +165,7 @@
             left: 30px; /* Distância da margem esquerda */
             transform: translateY(-50%); /* Ajuste para centralização vertical exata */
             z-index: 15;
-            background-color: rgba(34, 34, 34, 0.4); /* Fundo escuro semi-transparente */
+            background-color: rgba(34, 34, 34, 0.8); /* Fundo escuro semi-transparente */
             border-radius: 10px;
             padding: 15px; /* Reduzido o padding */
             color: #fff;
@@ -401,11 +401,13 @@
             .arcDashGap(4)
             .arcDashInitialGap(() => Math.random() * 5)
             .arcDashAnimateTime(1000)
+            
             // 3. --- Configuração dos Pontos ---
             .pointsData(pointsData)
             .pointAltitude(0.01) // Altura do ponto (se zero, fica na superfície)
             .pointColor('color') // Cor do ponto
             .pointRadius(0.6) // Raio do ponto (controla o tamanho visual no ecrã)
+            
             // 4. --- Configuração dos Rótulos (Labels) ---
             .labelsData(labelsData)
             .labelColor('color') // Cor do texto do rótulo (branco)
@@ -421,16 +423,12 @@
         renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
         document.getElementById('globeViz').appendChild(renderer.domElement);
 
-        
         // --- Cena e luzes ---
-        
-
-// REMOVIDO: scene.background = new THREE.Color(0x000000);
-        
         const scene = new THREE.Scene();
-        // ✅ ATRIBUIÇÃO DA TEXTURA DE GRADIENTE BRANCO E AZUL À CENA
-        const gradientTexture = createGradientTexture('#000000', '#000814'); // Branco/Azul claro para Azul muito escuro
-        scene.background = gradientTexture; 
+        // ✅ DEFINIÇÃO DA COR DE FUNDO DA CENA 3D (Three.js)
+        
+        // Isto garante que o fundo é consistentemente escuro se o CSS for ignorado.
+        scene.background = new THREE.Color(0x0a101d); 
         
         scene.add(Globe);
         scene.add(new THREE.AmbientLight(0xffffff, Math.PI));
@@ -441,7 +439,7 @@
         
         // 📌 POSIÇÃO DA CÂMARA (Vista Superior Deslocada)
         camera.position.x = -50; // Move a câmara ligeiramente para a esquerda
-        camera.position.y = 80;  // Move a câmara para cima (vista superior)
+        camera.position.y = 200;  // Move a câmara para cima (vista superior)
         camera.position.z = 350; // Zoom mais perto (Ajustado para melhor vista)
         
         // 1. Rotação da CÂMARA: Inclinar a vista em 20 graus para baixo no eixo X
@@ -472,37 +470,8 @@
         onWindowResize();
 
         // --- Rotação automática ---
-        const ROTATE_SPEED = -0.006;
-        
- 
-         // --- FUNÇÃO PARA CRIAR TEXTURA DE GRADIENTE (Demonstração do método THREE.js) ---
-        function createGradientTexture(color1, color2, size = 1024) {
-            const canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            
-            // ✅ CORREÇÃO PARA GRADIENTE MAIS SUAVE:
-            // Ajustamos o raio final para 80% do canvas. Um raio maior cria uma transição mais longa e suave.
-            const SOFT_RADIUS = size * 9.6;
+        const ROTATE_SPEED = -0.005;
 
-            // Criar gradiente radial no canvas 2D
-            const gradient = ctx.createRadialGradient(
-                size / 2, size / 2, 0,           // Início: centro do canvas, raio 0 (Cor 1)
-                size / 2, size / 2, SOFT_RADIUS  // Fim: centro do canvas, raio 80% (Cor 2)
-            );
-            
-            gradient.addColorStop(0, color1); // Cor no centro (Branco/Azul claro)
-            gradient.addColorStop(1, color2); // Cor nas bordas (Azul muito escuro)
-
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, size, size);
-
-            return new THREE.CanvasTexture(canvas);
-        }
- 
- 
- 
         // --- Inicialização do Gráfico de Pizza (Pie Chart) ---
         function initializeChart() {
             const ctx = document.getElementById('machineChart').getContext('2d');
