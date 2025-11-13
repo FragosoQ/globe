@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -6,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Globo Responsivo - Capitais</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <style>
         html, body {
             margin: 0;
@@ -14,8 +12,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            /* Usamos background (shorthand) para garantir que o gradiente 
-               (que é um tipo de background-image) é aplicado corretamente. */
+            /* GRADIENTE RADIAL CSS (Fundo da página) */
             background: radial-gradient(circle at center, #000814 0%, #000000 100%);
         }
         #globeViz {
@@ -265,15 +262,15 @@
         <div class="label">Equipments</div>
         <div class="label">Connected</div>
     </div>
-
+    
     <!-- CARD DO GRÁFICO DE PIZZA -->
     <div id="pie-chart-card">
-        <h2>Equipments</h2>
+        <h2>Máquinas por Modelo</h2>
         <div id="canvas-container">
             <canvas id="machineChart"></canvas>
         </div>
         
-        <!-- Lista de detalhes por baixo do gráfico -->
+        <!-- Lista de detalhes por baixo do gráfico COM SWATCHES -->
         <ul id="chart-details">
             <!-- 1. MWS300 (Cinza Médio: #808080) -->
             <li><span class="color-swatch" style="background-color: #808080;"></span> <span class="label-text">MWS300</span> <span class="chart-percentage">30%</span></li>
@@ -285,7 +282,6 @@
             <li><span class="color-swatch" style="background-color: #505050;"></span> <span class="label-text">MWS715</span> <span class="chart-percentage">20%</span></li>
         </ul>
     </div>
-
 
     <div id="globeViz"></div>
     <img id="logo" src="https://static.wixstatic.com/media/a6967f_b1478a338afc4870879e1ba83f915dc5~mv2.png" alt="Logo Multiwasher">
@@ -425,8 +421,17 @@
         renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
         document.getElementById('globeViz').appendChild(renderer.domElement);
 
+        
         // --- Cena e luzes ---
+        
+
+// REMOVIDO: scene.background = new THREE.Color(0x000000);
+        
         const scene = new THREE.Scene();
+        // ✅ ATRIBUIÇÃO DA TEXTURA DE GRADIENTE BRANCO E AZUL À CENA
+        const gradientTexture = createGradientTexture('#000000', '#000814'); // Branco/Azul claro para Azul muito escuro
+        scene.background = gradientTexture; 
+        
         scene.add(Globe);
         scene.add(new THREE.AmbientLight(0xffffff, Math.PI));
         scene.add(new THREE.DirectionalLight(0xf5f5f5, 4 * Math.PI));
@@ -434,10 +439,10 @@
         // --- Câmara ---
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         
-        // 📌 NOVA POSIÇÃO DA CÂMARA (Deslocada e com Zoom a 350)
+        // 📌 POSIÇÃO DA CÂMARA (Vista Superior Deslocada)
         camera.position.x = -50; // Move a câmara ligeiramente para a esquerda
-        camera.position.y = 200;  // Move a câmara para cima (vista superior)
-        camera.position.z = 400; // Zoom mais perto
+        camera.position.y = 80;  // Move a câmara para cima (vista superior)
+        camera.position.z = 350; // Zoom mais perto (Ajustado para melhor vista)
         
         // 1. Rotação da CÂMARA: Inclinar a vista em 20 graus para baixo no eixo X
         camera.rotation.x = THREE.MathUtils.degToRad(20);
@@ -445,8 +450,8 @@
         // ** ROTAÇÃO DO GLOBO (Centra o foco em Portugal: 38.72º N, -9.14º W) **
         // Latitude (N/S): -38.72 (negativo da latitude)
         Globe.rotation.x = THREE.MathUtils.degToRad(-38.7223); 
-        // Longitude (E/O): +9.14 (negativo da longitude -9.14)
-        //Globe.rotation.y = THREE.MathUtils.degToRad(9.1393);
+        // 2. Longitude (E/O): +9.14 (negativo da longitude -9.14)
+        Globe.rotation.y = THREE.MathUtils.degToRad(9.1393);
         
         // --- Controlos ---
         const tbControls = new TrackballControls(camera, renderer.domElement);
@@ -469,7 +474,35 @@
         // --- Rotação automática ---
         const ROTATE_SPEED = -0.005;
         
-        
+ 
+         // --- FUNÇÃO PARA CRIAR TEXTURA DE GRADIENTE (Demonstração do método THREE.js) ---
+        function createGradientTexture(color1, color2, size = 1024) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // ✅ CORREÇÃO PARA GRADIENTE MAIS SUAVE:
+            // Ajustamos o raio final para 80% do canvas. Um raio maior cria uma transição mais longa e suave.
+            const SOFT_RADIUS = size * 7.6;
+
+            // Criar gradiente radial no canvas 2D
+            const gradient = ctx.createRadialGradient(
+                size / 2, size / 2, 0,           // Início: centro do canvas, raio 0 (Cor 1)
+                size / 2, size / 2, SOFT_RADIUS  // Fim: centro do canvas, raio 80% (Cor 2)
+            );
+            
+            gradient.addColorStop(0, color1); // Cor no centro (Branco/Azul claro)
+            gradient.addColorStop(1, color2); // Cor nas bordas (Azul muito escuro)
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+ 
+ 
+ 
         // --- Inicialização do Gráfico de Pizza (Pie Chart) ---
         function initializeChart() {
             const ctx = document.getElementById('machineChart').getContext('2d');
@@ -479,12 +512,12 @@
                 labels: ['MWS300', 'MWS500', 'MWS700', 'MWS715'],
                 datasets: [{
                     data: [30, 50, 30, 20], 
-                    // 🚨 ATUALIZAÇÃO: Paleta estritamente Cinzento e Branco com OPACIDADE (Alpha=0.8)
+                    // 🚨 Paleta estritamente Cinzento e Branco com OPACIDADE (Alpha=0.8)
                     backgroundColor: [
-                        'rgba(128, 128, 128, 0.8)', // Cinzento Médio
-                        'rgba(211, 211, 211, 0.8)', // Cinzento Claro
-                        'rgba(255, 255, 255, 0.8)', // Branco
-                        'rgba(80, 80, 80, 0.8)'    // Cinzento Escuro
+                        'rgba(128, 128, 128, 0.8)', // Cinzento Médio (#808080)
+                        'rgba(211, 211, 211, 0.8)', // Cinzento Claro (#D3D3D3)
+                        'rgba(255, 255, 255, 0.8)', // Branco (#FFFFFF)
+                        'rgba(80, 80, 80, 0.8)'    // Cinzento Escuro (#505050)
                     ],
                     // Paleta de HOVER (Alpha=1.0 para manter o contraste na interação)
                     hoverBackgroundColor: [
@@ -542,11 +575,6 @@
 
             new Chart(ctx, config);
         }
-        
-        
-        
-        
-        
 
         // --- Loop de animação ---
         function animate() {
