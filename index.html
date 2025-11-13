@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Globo Responsivo - Capitais</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         html, body {
             margin: 0;
@@ -13,9 +14,8 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            /* ✅ CORREÇÃO AQUI: 
-                Usamos background (shorthand) para garantir que o gradiente 
-                (que é um tipo de background-image) é aplicado corretamente. */
+            /* Usamos background (shorthand) para garantir que o gradiente 
+               (que é um tipo de background-image) é aplicado corretamente. */
             background: radial-gradient(circle at center, #000814 0%, #000000 100%);
         }
         #globeViz {
@@ -131,11 +131,11 @@
             z-index: 1;
         }
 
-        /* --- Estilos para a Caixa de Informação de Equipamentos --- */
+        /* --- Estilos para a Caixa de Informação de Equipamentos (Direita) --- */
         #info-box {
             position: absolute;
             top: 50%; /* Centraliza verticalmente */
-            right: 250px; /* Distância da margem direita */
+            right: 30px; /* Distância da margem direita */
             transform: translateY(-50%); /* Ajuste para centralização vertical exata */
             z-index: 15; /* Acima do globo, abaixo dos logos */
             background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */
@@ -161,14 +161,14 @@
             color: #ffffff;
         }
         
-                /* --- Estilos para o Card do Gráfico de Pizza (Esquerda - NOVO) --- */
+        /* --- Estilos para o Card do Gráfico de Pizza (Esquerda) --- */
         #pie-chart-card {
             position: absolute;
             top: 50%; /* Centraliza verticalmente */
-            left: 180px; /* Distância da margem esquerda */
+            left: 30px; /* Distância da margem esquerda */
             transform: translateY(-50%); /* Ajuste para centralização vertical exata */
             z-index: 15;
-            background-color: rgba(34, 34, 34, 0.2); /* Fundo escuro semi-transparente */
+            background-color: rgba(34, 34, 34, 0.8); /* Fundo escuro semi-transparente */
             border-radius: 10px;
             padding: 15px; /* Reduzido o padding */
             color: #fff;
@@ -207,16 +207,36 @@
             padding: 4px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
+            align-items: center; /* Alinha o texto e o swatch verticalmente */
             justify-content: space-between;
         }
+        
+        /* Estilo para o Quadrado de Cor */
+        .color-swatch {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-right: 8px;
+            border-radius: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Borda suave */
+            /* Usamos flexbox para controlar o posicionamento dentro do <li> */
+            flex-shrink: 0; 
+        }
+        
+        .label-text {
+            /* Permite que o texto MWS... ocupe o espaço restante */
+            flex-grow: 1;
+        }
+
+        .chart-percentage {
+            font-weight: bold;
+            flex-shrink: 0; /* Impede que a percentagem encolha */
+        }
+
 
         #chart-details li:last-child {
             border-bottom: none;
         }
-        
-        
-        
-        
     </style>
 
     <script type="importmap">
@@ -255,10 +275,14 @@
         
         <!-- Lista de detalhes por baixo do gráfico -->
         <ul id="chart-details">
-            <li>MWS300 <span style="font-weight: bold;">30%</span></li>
-            <li>MWS500 <span style="font-weight: bold;">50%</span></li>
-            <li>MWS700 <span style="font-weight: bold;">30%</span></li>
-            <li>MWS715 <span style="font-weight: bold;">20%</span></li>
+            <!-- 1. MWS300 (Cinza Médio: #808080) -->
+            <li><span class="color-swatch" style="background-color: #808080;"></span> <span class="label-text">MWS300</span> <span class="chart-percentage">30%</span></li>
+            <!-- 2. MWS500 (Cinza Claro: #D3D3D3) -->
+            <li><span class="color-swatch" style="background-color: #D3D3D3;"></span> <span class="label-text">MWS500</span> <span class="chart-percentage">50%</span></li>
+            <!-- 3. MWS700 (Branco: #FFFFFF) -->
+            <li><span class="color-swatch" style="background-color: #FFFFFF;"></span> <span class="label-text">MWS700</span> <span class="chart-percentage">30%</span></li>
+            <!-- 4. MWS715 (Cinza Escuro: #505050) -->
+            <li><span class="color-swatch" style="background-color: #505050;"></span> <span class="label-text">MWS715</span> <span class="chart-percentage">20%</span></li>
         </ul>
     </div>
 
