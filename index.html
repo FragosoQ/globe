@@ -135,7 +135,7 @@
             right: 10%; /* Distância da margem direita */
             transform: translateY(-50%); /* Ajuste para centralização vertical exata */
             z-index: 15; /* Acima do globo, abaixo dos logos */
-            /*background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */*/
+            /*background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */
             border-radius: 10px;
             padding: 20px;
             color: #fff;
@@ -162,10 +162,10 @@
         #pie-chart-card {
             position: absolute;
             top: 50%; /* Centraliza verticalmente */
-            left: 60px; /* Distância da margem esquerda */
+            left: 30px; /* Distância da margem esquerda */
             transform: translateY(-50%); /* Ajuste para centralização vertical exata */
             z-index: 15;
-            background-color: rgba(34, 34, 34, 0.8); /* Fundo escuro semi-transparente */
+            background-color: rgba(34, 34, 34, 0.4); /* Fundo escuro semi-transparente */
             border-radius: 10px;
             padding: 15px; /* Reduzido o padding */
             color: #fff;
@@ -265,7 +265,7 @@
     
     <!-- CARD DO GRÁFICO DE PIZZA -->
     <div id="pie-chart-card">
-        <h2>Equipments</h2>
+        <h2>Máquinas por Modelo</h2>
         <div id="canvas-container">
             <canvas id="machineChart"></canvas>
         </div>
@@ -472,7 +472,7 @@
         onWindowResize();
 
         // --- Rotação automática ---
-        const ROTATE_SPEED = -0.005;
+        const ROTATE_SPEED = -0.006;
         
  
          // --- FUNÇÃO PARA CRIAR TEXTURA DE GRADIENTE (Demonstração do método THREE.js) ---
@@ -484,7 +484,7 @@
             
             // ✅ CORREÇÃO PARA GRADIENTE MAIS SUAVE:
             // Ajustamos o raio final para 80% do canvas. Um raio maior cria uma transição mais longa e suave.
-            const SOFT_RADIUS = size * 7.6;
+            const SOFT_RADIUS = size * 9.6;
 
             // Criar gradiente radial no canvas 2D
             const gradient = ctx.createRadialGradient(
