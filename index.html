@@ -135,7 +135,7 @@
             right: 15%; /* Distância da margem direita */
             transform: translateY(-50%); /* Ajuste para centralização vertical exata */
             z-index: 15; /* Acima do globo, abaixo dos logos */
-            /*background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */
+            /*background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */*/
             /*border-radius: 10px;*/
             padding: 20px;
             color: #fff;
@@ -169,12 +169,13 @@
             padding: 15px;
             color: #fff;
             font-family: Arial, sans-serif;
-            width: 300px; /* maior para acomodar layout lado a lado */
+            width: 350px; /* maior para acomodar layout lado a lado */
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
             display: flex; /* layout em linha */
             flex-direction: row; /* lado a lado */
             align-items: center;
             background: transparent; /* opcional, se desejar */
+        }
 
         #pie-chart-card h2 {
             font-size: 1.2em; /* Reduzido o título */
@@ -184,52 +185,52 @@
         
 /* Tamanho do Canvas */
 #canvas-container {
-  width: 150px;
-  height: 150px;
-  margin-right: 20px; /* espaçamento entre gráfico e legenda */
+    width: 150px;
+    height: 150px;
+    margin-right: 20px; /* espaçamento entre gráfico e legenda */
 }
 
 /* Legenda */
 #legend {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  width: 100px; /* ajuste conforme necessário */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 120px; /* ajuste conforme necessário */
 }
 #legend h2 {
-  margin: 0 0 10px 0;
-  font-size: 1.2em;
-  color: #f5f5f5;
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+    color: #f5f5f5;
 }
 
 /* Lista de detalhes na legenda */
 #chart-details {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  width: 90%;
-  font-size: 0.9em;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    font-size: 0.9em;
 }
 #chart-details li {
-  padding: 4px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
         
         /* Wrapper que envolve gráfico e legenda */
 #pie-chart-wrapper {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: start;
-  width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    width: 100%;
 }
         
         /* Estilo para o Quadrado de Cor */
         .color-swatch {
-            
+            display: inline-block;
             width: 12px;
             height: 12px;
             margin-right: 8px;
@@ -238,9 +239,6 @@
             /* Usamos flexbox para controlar o posicionamento dentro do <li> */
             flex-shrink: 0; 
         }
-        
-       
-        
         
         .label-text {
             /* Permite que o texto MWS... ocupe o espaço restante */
@@ -256,6 +254,36 @@
         #chart-details li:last-child {
             border-bottom: none;
         }
+        
+        /* --- NOVO CSS PARA O BOTÃO PLAY/PAUSE (Não altera estilos existentes) --- */
+        #play-pause-container {
+            position: absolute;
+            bottom: 30px; 
+            left: 50%;
+            transform: translateX(-50%); /* Centraliza abaixo */
+            z-index: 20;
+        }
+
+        #playPauseBtn {
+            padding: 10px 20px;
+            background-color: rgba(222, 214, 213,0.1); /* Azul */
+            color: gray;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #playPauseBtn:hover {
+            background-color: ;
+        }
+        /* FIM DO NOVO CSS */
     </style>
 
     <script type="importmap">
@@ -285,31 +313,27 @@
         <div class="label">Connected</div>
     </div>
     
-    <!-- CARD DO GRÁFICO DE PIZZA -->
     <div id="pie-chart-card">
         <h2></h2>
         <div id="canvas-container">
             <canvas id="machineChart"></canvas>
         </div>
         
-        <!-- Lista de detalhes por baixo do gráfico COM SWATCHES -->
         <ul id="chart-details">
-            <!-- 1. MWS300 (Cinza Médio: #808080) -->
             <li><span class="color-swatch" style="background-color: #808080;"></span> <span class="label-text">MWS300</span> <span class="chart-percentage">30%</span></li>
-            <!-- 2. MWS500 (Cinza Claro: #D3D3D3) -->
             <li><span class="color-swatch" style="background-color: #D3D3D3;"></span> <span class="label-text">MWS500</span> <span class="chart-percentage">50%</span></li>
-            <!-- 3. MWS700 (Branco: #FFFFFF) -->
             <li><span class="color-swatch" style="background-color: #FFFFFF;"></span> <span class="label-text">MWS700</span> <span class="chart-percentage">30%</span></li>
-            <!-- 4. MWS715 (Cinza Escuro: #505050) -->
             <li><span class="color-swatch" style="background-color: #505050;"></span> <span class="label-text">MWS715</span> <span class="chart-percentage">20%</span></li>
         </ul>
+    </div>
+    
+    <div id="play-pause-container">
+        <button id="playPauseBtn"> Pausar Rotação</button>
     </div>
 
     <div id="globeViz"></div>
     <img id="logo" src="https://static.wixstatic.com/media/a6967f_b1478a338afc4870879e1ba83f915dc5~mv2.png" alt="Logo Multiwasher">
     <img id="logo2" src="https://static.wixstatic.com/media/a6967f_691cf1aade3c471c816d1071b0c6ebdd~mv2.png" alt="Logo Somengil">
-    <!--<img id="logo3" src="https://static.wixstatic.com/media/a6967f_e14aa13d109a43c68d9f6b2730aa23b2~mv2.png" alt="Logo Somengil">-->
-
     <script type="module">
         import ThreeGlobe from 'https://esm.sh/three-globe?external=three';
         import * as THREE from 'three';
@@ -448,8 +472,7 @@
         // --- Cena e luzes ---
         const scene = new THREE.Scene();
         // ✅ DEFINIÇÃO DA COR DE FUNDO DA CENA 3D (Three.js)
-        
-        // Isto garante que o fundo é consistentemente escuro se o CSS for ignorado.
+        // Usando a cor escura do CSS de fundo para manter a harmonia visual
         scene.background = new THREE.Color(0x0a101d); 
         
         scene.add(Globe);
@@ -491,8 +514,10 @@
         window.addEventListener('resize', onWindowResize);
         onWindowResize();
 
-        // --- Rotação automática ---
+        // --- Rotação automática (MODIFICADO) ---
         const ROTATE_SPEED = -0.005;
+        // ** NOVO: Variável de estado para a rotação **
+        let isRotating = true;
 
         // --- Inicialização do Gráfico de Pizza (Pie Chart) ---
         function initializeChart() {
@@ -536,26 +561,26 @@
                         tooltip: {
                              // Tooltip mantido para interatividade
                              callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed !== null) {
-                                        const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                        const value = context.parsed;
-                                        // Calcula e exibe a percentagem real
-                                        const percentage = ((value / total) * 100).toFixed(1);
-                                        label += percentage + '%';
-                                    }
-                                    return label;
-                                }
-                            },
-                            bodyColor: '#333',
-                            titleColor: '#333',
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)', // Fundo claro para contraste
-                            borderColor: '#888',
-                            borderWidth: 1
+                                 label: function(context) {
+                                     let label = context.label || '';
+                                     if (label) {
+                                         label += ': ';
+                                     }
+                                     if (context.parsed !== null) {
+                                         const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                         const value = context.parsed;
+                                         // Calcula e exibe a percentagem real
+                                         const percentage = ((value / total) * 100).toFixed(1);
+                                         label += percentage + '%';
+                                     }
+                                     return label;
+                                 }
+                             },
+                             bodyColor: '#333',
+                             titleColor: '#333',
+                             backgroundColor: 'rgba(255, 255, 255, 0.9)', // Fundo claro para contraste
+                             borderColor: '#888',
+                             borderWidth: 1
                         },
                         title: {
                             display: false
@@ -567,16 +592,41 @@
             new Chart(ctx, config);
         }
 
-        // --- Loop de animação ---
+        // --- Loop de animação (MODIFICADO para a função Play/Pause) ---
         function animate() {
             requestAnimationFrame(animate);
-            // Rotação principal no eixo Y
-            Globe.rotation.y += ROTATE_SPEED;
+            
+            // ** Condição para a Rotação: SÓ roda se isRotating for true **
+            if (isRotating) {
+                // Rotação principal no eixo Y
+                Globe.rotation.y += ROTATE_SPEED;
+            }
             
             tbControls.update();
             renderer.render(scene, camera);
         }
 
+        // --- LÓGICA DO BOTÃO PLAY/PAUSE (NOVO) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const playPauseBtn = document.getElementById('playPauseBtn');
+
+            if (playPauseBtn) {
+                playPauseBtn.addEventListener('click', () => {
+                    isRotating = !isRotating; // Inverte o estado
+
+                    // Atualiza o texto e a cor do botão
+                    if (isRotating) {
+                        playPauseBtn.innerHTML = '⏸️ Pausar Rotação';
+                        playPauseBtn.style.backgroundColor = ''; // Azul
+                    } else {
+                        playPauseBtn.innerHTML = '▶️ Iniciar Rotação';
+                        playPauseBtn.style.backgroundColor = ''; // Vermelho/Laranja para indicar parada
+                    }
+                });
+            }
+        });
+
+        // Inicializa a animação e o gráfico
         animate();
         initializeChart();
     </script>
