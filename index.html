@@ -169,7 +169,7 @@
             padding: 15px;
             color: #fff;
             font-family: Arial, sans-serif;
-            width: 300px; /* maior para acomodar layout lado a lado */
+            width: 350px; /* maior para acomodar layout lado a lado */
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
             display: flex; /* layout em linha */
             flex-direction: row; /* lado a lado */
@@ -185,7 +185,7 @@
         
 /* Tamanho do Canvas */
 #canvas-container {
-    width: 150px;
+    width: 250px;
     height: 150px;
     margin-right: 20px; /* espaçamento entre gráfico e legenda */
 }
@@ -195,7 +195,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    width: 120px; /* ajuste conforme necessário */
+    width: 20px; /* ajuste conforme necessário */
 }
 #legend h2 {
     margin: 0 0 10px 0;
@@ -318,12 +318,13 @@
         <div id="canvas-container">
             <canvas id="machineChart"></canvas>
         </div>
-        
+      
         <ul id="chart-details">
-            <li><span class="color-swatch" style="background-color: #808080;"></span> <span class="label-text">MWS300</span> <span class="chart-percentage">30%</span></li>
-            <li><span class="color-swatch" style="background-color: #D3D3D3;"></span> <span class="label-text">MWS500</span> <span class="chart-percentage">50%</span></li>
-            <li><span class="color-swatch" style="background-color: #FFFFFF;"></span> <span class="label-text">MWS700</span> <span class="chart-percentage">30%</span></li>
-            <li><span class="color-swatch" style="background-color: #505050;"></span> <span class="label-text">MWS715</span> <span class="chart-percentage">20%</span></li>
+            <li><span class="color-swatch" style="background-color: #808080;"></span> <span class="label-text">EUROPA</span> <span class="chart-percentage">73.5%</span></li>
+            <li><span class="color-swatch" style="background-color: #D3D3D3;"></span> <span class="label-text">AMÉRICA</span> <span class="chart-percentage">17.9%</span></li>
+            <li><span class="color-swatch" style="background-color: #FFFFFF;"></span> <span class="label-text">ÁFRICA</span> <span class="chart-percentage">0.5%</span></li>
+            <li><span class="color-swatch" style="background-color: #505050;"></span> <span class="label-text">ÁSIA</span> <span class="chart-percentage">7.1%</span></li>
+            <li><span class="color-swatch" style="background-color: #312f31;"></span> <span class="label-text">OCEÂNIA</span> <span class="chart-percentage">1.0%</span></li>
         </ul>
     </div>
     
@@ -523,17 +524,19 @@
         function initializeChart() {
             const ctx = document.getElementById('machineChart').getContext('2d');
             
-            // Dados fornecidos: MWS300: 30, MWS500: 50, MWS700: 30, MWS715: 20
+            // Dados fornecidos: Europa: 73.5, América: 17.9, África: 0.5, Ásia: 7.1, Oceânia: 1,0
             const machineData = {
-                labels: ['MWS300', 'MWS500', 'MWS700', 'MWS715'],
+                labels: ['EUROPA', 'AMÉRICA', 'ÁFRICA', 'ÁSIA', 'Oceânia'],
                 datasets: [{
-                    data: [30, 50, 30, 20], 
+                    data: [73.5, 17.9, 0.5, 7.1, 1.0], 
                     // 🚨 Paleta estritamente Cinzento e Branco com OPACIDADE (Alpha=0.8)
                     backgroundColor: [
                         'rgba(128, 128, 128, 0.8)', // Cinzento Médio (#808080)
                         'rgba(211, 211, 211, 0.8)', // Cinzento Claro (#D3D3D3)
                         'rgba(255, 255, 255, 0.8)', // Branco (#FFFFFF)
-                        'rgba(80, 80, 80, 0.8)'    // Cinzento Escuro (#505050)
+                        'rgba(80, 80, 80, 0.8)',  // Cinzento Escuro (#505050)
+                        'rgba(49,47,49, 0.8)'    // Cinzento Escuro (#312f31)
+                        
                     ],
                     // Paleta de HOVER (Alpha=1.0 para manter o contraste na interação)
                     hoverBackgroundColor: [
