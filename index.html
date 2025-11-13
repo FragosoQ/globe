@@ -12,8 +12,8 @@
             height: 100%;
             overflow: hidden;
             /* ✅ CORREÇÃO AQUI: 
-               Usamos background (shorthand) para garantir que o gradiente 
-               (que é um tipo de background-image) é aplicado corretamente. */
+                Usamos background (shorthand) para garantir que o gradiente 
+                (que é um tipo de background-image) é aplicado corretamente. */
             background: radial-gradient(circle at center, #000814 0%, #000000 100%);
         }
         #globeViz {
@@ -194,8 +194,8 @@
 
     <script type="module">
         import ThreeGlobe from 'https://esm.sh/three-globe?external=three';
-        import * as THREE from 'https://esm.sh/three';
-        import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js?external=three';
+        import * as THREE from 'three';
+        import { TrackballControls } from 'https://esm.sh/three/examples/jsm/controls/TrackballControls.js';
 
         // --- Dados de arcos (todas as capitais a partir de Lisboa), com nomes em Inglês ---
        const arcsData = [
@@ -271,7 +271,7 @@
         { startLat: 38.7223, startLng: -9.1393, endLat: 46.8182, endLng: 8.2275, name: 'CH', color: '#50B6E8' }, // Suíça (Bern)
         { startLat: 38.7223, startLng: -9.1393, endLat: 51.5074, endLng: -0.1278, name: 'GB', color: '#50B6E8' }, // Reino Unido (London)
         { startLat: 38.7223, startLng: -9.1393, endLat: 50.0755, endLng: 14.4378, name: 'CZ', color: '#50B6E8' } // Chéquia (Prague)
-    ];
+        ];
 
         // 1. --- Preparar os Dados dos Pontos ---
         const pointsData = arcsData.map(d => ({
@@ -282,18 +282,18 @@
         }));
 
         // 2. --- Preparar os Dados dos Rótulos (Labels) ---
-const labelsData = arcsData.map(d => ({
-  lat: d.endLat,
-  lng: d.endLng,
-  text: d.name,
-  size: 1.8,
-  color: 'gray',
-  fontFace: 'Arial',
-  labelDotRadius: 0.001,
-  // Adicionando borda ao texto (se suportado)
-  strokeColor: '#000000', // cor do contorno
-  strokeWidth: 0.0005 // espessura do contorno
-}));
+       const labelsData = arcsData.map(d => ({
+          lat: d.endLat,
+          lng: d.endLng,
+          text: d.name,
+          size: 1.8,
+          color: 'gray',
+          fontFace: 'Arial',
+          labelDotRadius: 0.001,
+          // Adicionando borda ao texto (se suportado)
+          strokeColor: '#000000', // cor do contorno
+          strokeWidth: 0.0005 // espessura do contorno
+       }));
 
         // --- Globo ---
         const Globe = new ThreeGlobe()
@@ -320,7 +320,6 @@ const labelsData = arcsData.map(d => ({
             .labelResolution(3); // Aumenta a resolução do texto para melhor qualidade
             
 
-
         // --- Renderer ---
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
@@ -334,13 +333,26 @@ const labelsData = arcsData.map(d => ({
 
         // --- Câmara ---
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 500;
-
+        
+        // 📌 NOVA POSIÇÃO DA CÂMARA (Deslocada e com Zoom a 350)
+        camera.position.x = -50; // Move a câmara ligeiramente para a esquerda
+        camera.position.y = 200;  // Move a câmara para cima (vista superior)
+        camera.position.z = 400; // Zoom mais perto
+        
+        // 1. Rotação da CÂMARA: Inclinar a vista em 20 graus para baixo no eixo X
+        camera.rotation.x = THREE.MathUtils.degToRad(20);
+        
+        // ** ROTAÇÃO DO GLOBO (Centra o foco em Portugal: 38.72º N, -9.14º W) **
+        // Latitude (N/S): -38.72 (negativo da latitude)
+        Globe.rotation.x = THREE.MathUtils.degToRad(-38.7223); 
+        // Longitude (E/O): +9.14 (negativo da longitude -9.14)
+        Globe.rotation.y = THREE.MathUtils.degToRad(9.1393);
+        
         // --- Controlos ---
         const tbControls = new TrackballControls(camera, renderer.domElement);
         tbControls.minDistance = 101;
-            tbControls.rotateSpeed = 5;
-            tbControls.zoomSpeed = 0.8;
+        tbControls.rotateSpeed = 5;
+        tbControls.zoomSpeed = 0.8;
 
         // --- Resize Responsivo ---
         function onWindowResize() {
@@ -360,7 +372,9 @@ const labelsData = arcsData.map(d => ({
         // --- Loop de animação ---
         function animate() {
             requestAnimationFrame(animate);
+            // Rotação principal no eixo Y
             Globe.rotation.y += ROTATE_SPEED;
+            
             tbControls.update();
             renderer.render(scene, camera);
         }
