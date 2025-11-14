@@ -208,12 +208,12 @@ const labelsData = arcsData.map(d => ({
   lat: d.endLat,
   lng: d.endLng,
   text: d.name,
-  size: 0.001,
+  size: 1.001,
   color: 'gray',
   fontFace: 'Arial',
   labelDotRadius: 0.001,
   strokeColor: '#000000',
-  strokeWidth: 0.0005
+  strokeWidth: 1.0005
 }));
 
 // Cria o globo
@@ -221,11 +221,22 @@ const Globe = new ThreeGlobe()
   .globeImageUrl('https://static.wixstatic.com/media/a6967f_cbed4d361eb14d93aff8dcb6ede40613~mv2.jpg')
   .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png')
   .arcsData(arcsData)
-  .arcColor('color')
+  .arcColor(d => t => {
+  const base = new THREE.Color(d.color);       // cor do arco
+  const bright = base.clone();
+  bright.offsetHSL(0, 0, 0.25);               // clareia no fim
+
+  const color = base.clone().lerp(bright, t);
+
+  // opacidade aumenta ao longo do arco
+  const alpha = t;  // 0 no início, 1 no fim
+  return `rgba(${Math.round(color.r*255)}, ${Math.round(color.g*255)}, ${Math.round(color.b*255)}, ${alpha})`;
+})
   .arcDashLength(0.4)
   .arcDashGap(4)
   .arcDashInitialGap(() => Math.random() * 5)
   .arcDashAnimateTime(1000)
+.arcStroke(1)   // ← aumenta a espessura do arco
   .pointsData(pointsData)
   .pointAltitude(0)
   .pointColor('color')
