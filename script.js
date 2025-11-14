@@ -83,217 +83,149 @@ const arcsData = [
   { startLat: 38.7223, startLng: -9.1393, endLat: -33.8678, endLng: 151.2073, name: 'SYD', color: '#50B6E8' }
 ];
 
-// Pontos adicionais (copiado do teu código original)
-const pontosAdicionais = [
-  // Portugal (PO)
-  { lat: 38.7169, lng: -9.139, size: 0.3, color: '#0058E8' },
-  { lat: 41.1496, lng: -8.611, size: 0.3, color: '#0058E8' },
-  // Espanha (ES)
-  { lat: 40.4168, lng: -3.7038, size: 0.3, color: '#0058E8' },
-  { lat: 41.3851, lng: 2.1734, size: 0.3, color: '#0058E8' },
-  { lat: 39.4699, lng: -0.3763, size: 0.3, color: '#0058E8' },
-  { lat: 37.3891, lng: -5.9845, size: 0.3, color: '#0058E8' },
-  { lat: 43.263, lng: -2.935, size: 0.3, color: '#0058E8' },
-  // França (FR)
-  { lat: 48.8566, lng: 2.3522, size: 0.3, color: '#0058E8' },
-  { lat: 45.764, lng: 4.8357, size: 0.3, color: '#0058E8' },
-  { lat: 43.2965, lng: 5.3698, size: 0.3, color: '#0058E8' },
-  // Alemanha (AL)
-  { lat: 52.52, lng: 13.405, size: 0.3, color: '#0058E8' },
-  { lat: 48.1351, lng: 11.582, size: 0.3, color: '#0058E8' },
-  { lat: 53.5511, lng: 9.9937, size: 0.3, color: '#0058E8' },
-  { lat: 50.1109, lng: 8.6821, size: 0.3, color: '#0058E8' },
-  { lat: 51.0504, lng: 13.7373, size: 0.3, color: '#0058E8' },
-  // Áustria (AU)
-  { lat: 48.2082, lng: 16.3738, size: 0.3, color: '#0058E8' },
-  { lat: 47.8095, lng: 13.055, size: 0.3, color: '#0058E8' },
-  // Bélgica (BE)
-  { lat: 50.8503, lng: 4.3517, size: 0.3, color: '#0058E8' },
-  { lat: 51.2194, lng: 4.4025, size: 0.3, color: '#0058E8' },
-  { lat: 51.0543, lng: 3.7174, size: 0.3, color: '#0058E8' },
-  // Países Baixos (PA)
-  { lat: 52.3676, lng: 4.9041, size: 0.3, color: '#0058E8' },
-  { lat: 51.9244, lng: 4.4777, size: 0.3, color: '#0058E8' },
-  { lat: 52.0907, lng: 5.1214, size: 0.3, color: '#0058E8' },
-  // Noruega (NO)
-  { lat: 59.9139, lng: 10.7522, size: 0.3, color: '#0058E8' },
-  { lat: 60.3913, lng: 5.3221, size: 0.3, color: '#0058E8' },
-  // Suécia (SU)
-  { lat: 59.3293, lng: 18.0686, size: 0.3, color: '#0058E8' },
-  { lat: 57.7089, lng: 11.9746, size: 0.3, color: '#0058E8' },
-  { lat: 55.605, lng: 13.0038, size: 0.3, color: '#0058E8' },
-  // Dinamarca (DI)
-  { lat: 55.6761, lng: 12.5683, size: 0.3, color: '#0058E8' },
-  { lat: 56.1629, lng: 10.2039, size: 0.3, color: '#0058E8' },
-  // Finlândia (FI)
-  { lat: 60.1695, lng: 24.9355, size: 0.3, color: '#0058E8' },
-  { lat: 60.4518, lng: 22.2666, size: 0.3, color: '#0058E8' },
-  // Islândia (IS)
-  { lat: 64.1355, lng: -21.8954, size: 0.3, color: '#0058E8' },
-  // Irlanda (IR)
-  { lat: 53.3331, lng: -6.2489, size: 0.3, color: '#0058E8' },
-  { lat: 53.2707, lng: -9.0568, size: 0.3, color: '#0058E8' },
-  // Itália (IT)
-  { lat: 41.9028, lng: 12.4964, size: 0.3, color: '#0058E8' },
-  { lat: 45.4642, lng: 9.19, size: 0.3, color: '#0058E8' },
-  { lat: 40.8518, lng: 14.2681, size: 0.3, color: '#0058E8' },
-  { lat: 43.7696, lng: 11.2558, size: 0.3, color: '#0058E8' },
-  { lat: 45.4408, lng: 12.3155, size: 0.3, color: '#0058E8' },
-  // Portugal (PO) - Repetições
-  { lat: 38.7169, lng: -9.139, size: 0.3, color: '#0058E8' },
-  { lat: 41.1496, lng: -8.611, size: 0.3, color: '#0058E8' },
-  // Rep. Tcheca (RE)
-  { lat: 50.0755, lng: 14.4378, size: 0.3, color: '#0058E8' },
-  { lat: 49.1951, lng: 16.6068, size: 0.3, color: '#0058E8' },
-  // Polónia (PO)
-  { lat: 52.2297, lng: 21.0122, size: 0.3, color: '#0058E8' },
-  { lat: 50.0647, lng: 19.945, size: 0.3, color: '#0058E8' },
-  // Roménia (RO)
-  { lat: 44.4268, lng: 26.1025, size: 0.3, color: '#0058E8' },
-  // Hungria (HU)
-  { lat: 47.4979, lng: 19.0402, size: 0.3, color: '#0058E8' },
-  // Bulgária (BU)
-  { lat: 42.6977, lng: 23.3219, size: 0.3, color: '#0058E8' },
-  // Sérvia (SE)
-  { lat: 44.8176, lng: 20.4569, size: 0.3, color: '#0058E8' },
-  // Croácia (CR)
-  { lat: 45.815, lng: 15.9785, size: 0.3, color: '#0058E8' },
-  // Eslovénia (ES)
-  { lat: 46.0569, lng: 14.5058, size: 0.3, color: '#0058E8' },
-  // Macedónia do Norte (MA)
-  { lat: 41.9981, lng: 21.4254, size: 0.3, color: '#0058E8' },
-  // Albânia (AL)
-  { lat: 41.3275, lng: 19.8189, size: 0.3, color: '#0058E8' },
-  // Montenegro (MO)
-  { lat: 42.441, lng: 19.2625, size: 0.3, color: '#0058E8' },
-  // Bósnia (BO)
-  { lat: 43.8563, lng: 18.4131, size: 0.3, color: '#0058E8' },
-  // Kosovo (KO)
-  { lat: 42.6629, lng: 21.1655, size: 0.3, color: '#0058E8' },
-  // Letónia (LE)
-  { lat: 56.946, lng: 24.1059, size: 0.3, color: '#0058E8' },
-  // Lituânia (LI)
-  { lat: 54.6872, lng: 25.2797, size: 0.3, color: '#0058E8' },
-  // Estónia (ES)
-  { lat: 59.437, lng: 24.7536, size: 0.3, color: '#0058E8' },
-  // Luxemburgo (LU)
-  { lat: 49.6116, lng: 6.1319, size: 0.3, color: '#0058E8' },
-  // Malta (MA)
-  { lat: 35.8997, lng: 14.5146, size: 0.3, color: '#0058E8' },
-  // Andorra (AN)
-  { lat: 42.5078, lng: 1.5211, size: 0.3, color: '#0058E8' },
-  // Mónaco (MO)
-  { lat: 43.7384, lng: 7.4246, size: 0.3, color: '#0058E8' },
-  // São Marino (SA)
-  { lat: 43.9336, lng: 12.4484, size: 0.3, color: '#0058E8' },
-  // Islândia (IS) - Repetição
-  { lat: 64.1355, lng: -21.8954, size: 0.3, color: '#0058E8' },
-  // Liechtenstein (LI)
-  { lat: 47.1417, lng: 9.5215, size: 0.3, color: '#0058E8' },
-  // (… resto dos pontos exatamente como no teu código original …)
-  // Para não te esmagar aqui com 1000 linhas, mantém no teu ficheiro script.js
-  // a lista completa de `pontosAdicionais` que já tinhas — podes copiar e colar.
-];
+// Função para buscar pontos adicionais
+const pontosAdicionaisUrl = 'https://script.google.com/macros/s/AKfycbxVCVzdc9dXayhnepMGL3CdN4PxaT1DQ8rVMqPhCaOf/dev';
 
-// Preparar os pontos de todos os locais
-const pointsData = arcsData.map(d => ({
-  lat: d.endLat,
-  lng: d.endLng,
-  size: d.name === 'Lisbon' ? 0.25 : 0.2,
-  color: d.name === 'Lisbon' ? '#ffffff' : '#0058E8'
-})).concat(pontosAdicionais);
-
-// Labels
-const labelsData = arcsData.map(d => ({
-  lat: d.endLat,
-  lng: d.endLng,
-  text: d.name,
-  size: 0.001,
-  color: 'gray',
-  fontFace: 'Arial',
-  labelDotRadius: 0.001,
-  strokeColor: '#000000',
-  strokeWidth: 0.0005
-}));
-
-// Cria o globo
-const Globe = new ThreeGlobe()
-  .globeImageUrl('https://static.wixstatic.com/media/a6967f_cbed4d361eb14d93aff8dcb6ede40613~mv2.jpg')
-  .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png')
-  .arcsData(arcsData)
-  .arcColor('color')
-  .arcDashLength(0.4)
-  .arcDashGap(4)
-  .arcDashInitialGap(() => Math.random() * 5)
-  .arcDashAnimateTime(1000)
-  .pointsData(pointsData)
-  .pointAltitude(0)
-  .pointColor('color')
-  .pointRadius(0.3)
-  .labelsData(labelsData)
-  .labelColor('color')
-  .labelAltitude(0.01)
-  .labelSize('size')
-  .labelDotRadius('labelDotRadius')
-  .labelText('text')
-  .labelResolution(3);
-
-// Renderer
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-document.getElementById('globeViz').appendChild(renderer.domElement);
-
-// Cena
-const scene = new THREE.Scene();
-function createRadialGradientTexture() {
-  const size = 256;
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  const gradient = ctx.createRadialGradient(size / 2, size / 2, 0.5, size / 2, size / 2, size / 2);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, size, size);
-  const texture = new THREE.Texture();
-  texture.needsUpdate = true;
-  return texture;
+async function buscarPontosAdicionais() {
+  try {
+    const response = await fetch(pontosAdicionaisUrl);
+    if (!response.ok) throw new Error('Erro ao buscar pontos adicionais');
+    const pontos = await response.json();
+    return pontos;
+  } catch (error) {
+    console.error('Erro ao buscar pontos adicionais:', error);
+    return [];
+  }
 }
-const gradientTexture = createRadialGradientTexture();
-scene.background = gradientTexture;
-scene.add(Globe);
-scene.add(new THREE.AmbientLight(0xffffff, Math.PI));
-scene.add(new THREE.DirectionalLight(0xf5f5f5, 4 * Math.PI));
 
-// Camera
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.x = -50;
-camera.position.y = 200;
-camera.position.z = 350;
-camera.rotation.x = THREE.MathUtils.degToRad(20);
-Globe.rotation.x = THREE.MathUtils.degToRad(-38.7223);
-Globe.rotation.y = THREE.MathUtils.degToRad(9.1393);
+// Função de inicialização assíncrona
+async function init() {
+  const pontosAdicionais = await buscarPontosAdicionais();
 
-// Controles
-const tbControls = new TrackballControls(camera, renderer.domElement);
-tbControls.minDistance = 101;
-tbControls.rotateSpeed = 5;
-tbControls.zoomSpeed = 0.8;
+  // Preparar pontos de todos os locais
+  const pointsData = arcsData.map(d => ({
+    lat: d.endLat,
+    lng: d.endLng,
+    size: d.name === 'Lisbon' ? 0.25 : 0.2,
+    color: d.name === 'Lisbon' ? '#ffffff' : '#0058E8'
+  })).concat(pontosAdicionais);
 
-// Resize
-function onWindowResize() {
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-  renderer.setSize(width, height);
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
+  // Labels
+  const labelsData = arcsData.map(d => ({
+    lat: d.endLat,
+    lng: d.endLng,
+    text: d.name,
+    size: 0.001,
+    color: 'gray',
+    fontFace: 'Arial',
+    labelDotRadius: 0.001,
+    strokeColor: '#000000',
+    strokeWidth: 0.0005
+  }));
+
+  // Cria o globo
+  const Globe = new ThreeGlobe()
+    .globeImageUrl('https://static.wixstatic.com/media/a6967f_cbed4d361eb14d93aff8dcb6ede40613~mv2.jpg')
+    .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png')
+    .arcsData(arcsData)
+    .arcColor('color')
+    .arcDashLength(0.4)
+    .arcDashGap(4)
+    .arcDashInitialGap(() => Math.random() * 5)
+    .arcDashAnimateTime(1000)
+    .pointsData(pointsData)
+    .pointAltitude(0)
+    .pointColor('color')
+    .pointRadius(0.3)
+    .labelsData(labelsData)
+    .labelColor('color')
+    .labelAltitude(0.01)
+    .labelSize('size')
+    .labelDotRadius('labelDotRadius')
+    .labelText('text');
+
+  // Renderer
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+  document.getElementById('globeViz').appendChild(renderer.domElement);
+
+  // Cena
+  const scene = new THREE.Scene();
+  function createRadialGradientTexture() {
+    const size = 256;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createRadialGradient(size / 2, size / 2, 0.5, size / 2, size / 2, size / 2);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    const texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }
+  const gradientTexture = createRadialGradientTexture();
+  scene.background = gradientTexture;
+  scene.add(Globe);
+  scene.add(new THREE.AmbientLight(0xffffff, Math.PI));
+  scene.add(new THREE.DirectionalLight(0xf5f5f5, 4 * Math.PI));
+
+  // Câmera
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.x = -50;
+  camera.position.y = 200;
+  camera.position.z = 350;
+  camera.rotation.x = THREE.MathUtils.degToRad(80);
+  Globe.rotation.x = THREE.MathUtils.degToRad(-38.7223);
+  Globe.rotation.y = THREE.MathUtils.degToRad(9.1393);
+
+  // Controles
+  const tbControls = new TrackballControls(camera, renderer.domElement);
+  tbControls.minDistance = 101;
+  tbControls.rotateSpeed = 5;
+  tbControls.zoomSpeed = 0.8;
+
+  // Resize
+  function onWindowResize() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', onWindowResize);
+  onWindowResize();
+
+  const ROTATE_SPEED = -0.005;
+  let isRotating = true;
+
+  // Animação
+  function animate() {
+    requestAnimationFrame(animate);
+    if (isRotating) {
+      Globe.rotation.y += ROTATE_SPEED;
+    }
+    tbControls.update();
+    renderer.render(scene, camera);
+  }
+
+  // Botão Play/Pause
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('playPauseBtn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        isRotating = !isRotating;
+        btn.innerHTML = isRotating ? 'Pausar Rotação' : 'Iniciar Rotação';
+      });
+    }
+  });
+
+  // Inicia animação e gráfico
+  animate();
+  initializeChart();
 }
-window.addEventListener('resize', onWindowResize);
-onWindowResize();
 
-const ROTATE_SPEED = -0.005;
-let isRotating = true;
-
-// Chart initialization
+// Função de inicialização do gráfico
 function initializeChart() {
   const ctx = document.getElementById('machineChart').getContext('2d');
   const data = {
@@ -350,27 +282,5 @@ function initializeChart() {
   new Chart(ctx, config);
 }
 
-// Loop de animação
-function animate() {
-  requestAnimationFrame(animate);
-  if (isRotating) {
-    Globe.rotation.y += ROTATE_SPEED;
-  }
-  tbControls.update();
-  renderer.render(scene, camera);
-}
-
-// Lógica do botão Play/Pause
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('playPauseBtn');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      isRotating = !isRotating;
-      btn.innerHTML = isRotating ? 'Pausar Rotação' : 'Iniciar Rotação';
-    });
-  }
-});
-
-// Inicializar tudo
-animate();
-initializeChart();
+// Iniciar tudo
+init();
