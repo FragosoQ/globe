@@ -33,10 +33,12 @@ canvas {
     position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
     z-index: 20; background-color: rgba(255, 255, 255, 0.1); border-radius: 999px;
     display: flex;
+  width: 430px;
+  height: 30px;
     padding-top: 10px; 
     padding-bottom: 10px;
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: ;
+    padding-right: ;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     backdrop-filter: blur(3px);
     /* visible stroke/border */
@@ -49,8 +51,8 @@ canvas {
     font-weight: bold;
     font-size: 0.9rem;
     transition: color 0.3s ease;
-    display: flex; justify-content: center; align-items: center;
-    min-width: 140px;
+    display: flex; justify-content: right; align-items: center;
+    min-width: 160px;
 }
 .toggle-btn:hover {
     color: #50B6E8;
@@ -68,7 +70,7 @@ canvas {
 .toggle-slider {
     position: absolute; top: 5px; left: 5px;
     height: calc(100% - 10px);
-    width: calc(58% - 5px);
+    width: calc(50% - 5px);
     background-color: #ffffff;
     border-radius: 999px;
     transition: transform .3s ease;
@@ -77,10 +79,25 @@ canvas {
 
 #daily-report:checked + .toggle-btn-label { color: #000; z-index: 1; }
 #connected-machines:checked + .toggle-btn-label { color: #000; z-index: 1; }
+#daily-report:checked ~ .toggle-slider {
+    transform: translateX(0);
+}
 
 /* Inactive toggle button labels - color white */
 #daily-report:not(:checked) + .toggle-btn-label { color: #fff; }
+
 #connected-machines:not(:checked) + .toggle-btn-label { color: #fff; }
+
+#connected-machines:checked ~ .toggle-slider {
+    /* Ajustamos o translate para mover 10px para a esquerda */
+    /* Originalmente 100% era a largura original (50% - 5px)
+       Agora, 100% é a largura reduzida (50% - 15px) + 10px de offset */
+    transform: translateX(calc(100%-10px));
+}
+
+
+
+
 
 #info-box {
     position: absolute; top: 50%; right: 12%; transform: translateY(-50%);
