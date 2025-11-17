@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Rotas de Voo (Partida em 38.7223, -9.1393)</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS for the map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        #map {
+            height: 100vh; /* O mapa ocupa toda a altura da viewport */
+            width: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        /* Estilo para ícones personalizados */
+        .custom-div-icon div {
+            transition: transform 0.2s;
+        }
+        .custom-div-icon div:hover {
+            transform: scale(1.5);
+        }
+    </style>
+</head>
+<body class="p-0 m-0 overflow-hidden">
+
+    <!-- O painel de informações da esquerda foi removido conforme solicitado. -->
+
+    <!-- Route Adder Panel (Right) -->
+    <div class="absolute top-4 right-4 z-[1000] p-4 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg shadow-xl max-w-xs">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">Adicionar Nova Rota</h2>
+        
+        <form id="addRouteForm" class="space-y-2">
+            <div>
+                <label for="name" class="block text-xs font-medium text-gray-700">Código (Ex: NYC):</label>
+                <input type="text" id="name" required maxlength="5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm border focus:ring-[#50B6E8] focus:border-[#50B6E8]">
+            </div>
+            <div>
+                <label for="endLat" class="block text-xs font-medium text-gray-700">Latitude Destino:</label>
+                <input type="number" id="endLat" required step="any" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm border focus:ring-[#50B6E8] focus:border-[#50B6E8]">
+            </div>
+            <div>
+                <label for="endLng" class="block text-xs font-medium text-gray-700">Longitude Destino:</label>
+                <input type="number" id="endLng" required step="any" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm border focus:ring-[#50B6E8] focus:border-[#50B6E8]">
+            </div>
+            <div>
+                <label for="color" class="block text-xs font-medium text-gray-700">Cor (Hex/RGBA):</label>
+                <input type="text" id="color" value="#F97316" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm border focus:ring-[#50B6E8] focus:border-[#50B6E8]">
+            </div>
+            <button type="submit" class="w-full mt-4 px-4 py-2 bg-[#50B6E8] text-white font-bold rounded-md shadow-md hover:bg-sky-500 transition duration-150">
+                Adicionar Rota
+            </button>
+        </form>
+        <div id="messageBox" class="mt-3 text-center text-sm font-medium hidden rounded-md p-2" role="alert"></div>
+    </div>
+    
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        // --- CONFIGURAÇÃO E DADOS ---
+
+        // Os dados das rotas, agora como 'let' para permitir modificação.
+        let flightRoutes = [
+            { name: 'LAD', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: -8.8383, endLng: 13.2344 },
+            { name: 'LBV', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 0.4162, endLng: 9.4673 },
+            { name: 'TIP', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 32.8872, endLng: 13.5888 },
+            { name: 'CMN', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 33.5731, endLng: -7.5898 },
+            { name: 'MPM', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: -25.9653, endLng: 32.5832 },
+            { name: 'TMS', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 0.3366, endLng: 6.7325 },
+            { name: 'CAI', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 30.0444, endLng: 31.2357 },
+            { name: 'ABJ', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 5.36, endLng: -4.0083 },
+            { name: 'RAI', color: 'rgba(255,255,255,0.8)', startLat: 38.7223, startLng: -9.1393, endLat: 14.9213, endLng: -23.5085 },
+            { name: 'BUE', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: -34.5997, endLng: -58.3819 },
+            { name: 'BSB', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: -15.7939, endLng: -47.8828 },
+            { name: 'YOW', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 45.4215, endLng: -75.6972 },
+            { name: 'SCL', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: -33.4489, endLng: -70.6693 },
+            { name: 'BOG', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 4.711, endLng: -74.0721 },
+            { name: 'SDQ', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 18.4861, endLng: -69.9312 },
+            { name: 'SAL', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 13.6929, endLng: -89.2182 },
+            { name: 'GUA', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 14.6349, endLng: -90.5069 },
+            { name: 'TGU', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 14.0723, endLng: -87.2068 },
+            { name: 'MEX', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 19.4326, endLng: -99.1332 },
+            { name: 'PTY', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 8.9824, endLng: -79.5199 },
+            { name: 'LIM', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: -12.0464, endLng: -77.0428 },
+            { name: 'JFK', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 40.6611, endLng: -73.945 },
+            { name: 'LAX', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 34.0522, endLng: -118.2437 },
+            { name: 'VIE', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 48.2084, endLng: 16.3738 },
+            { name: 'BRU', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 50.8471, endLng: 4.3661 },
+            { name: 'ZAG', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 45.815, endLng: 15.9819 },
+            { name: 'NIC', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 35.1856, endLng: 33.3823 },
+            { name: 'PRG', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 50.0755, endLng: 14.4378 },
+            { name: 'CPH', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 55.6761, endLng: 12.5683 },
+            { name: 'MAD', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 40.4169, endLng: -3.7034 },
+            { name: 'TLL', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 59.437, endLng: 24.7536 },
+            { name: 'HEL', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 60.1695, endLng: 24.9355 },
+            { name: 'CDG', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 48.8567, endLng: 2.3522 },
+            { name: 'BER', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 52.5167, endLng: 13.3833 },
+            { name: 'ATH', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 37.9838, endLng: 23.7275 },
+            { name: 'BUD', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 47.4979, endLng: 19.0402 },
+            { name: 'FCO', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 41.8933, endLng: 12.4828 },
+            { name: 'VNO', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 54.6872, endLng: 25.2797 },
+            { name: 'LUX', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 49.8153, endLng: 6.1296 },
+            { name: 'AMS', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 52.3702, endLng: 4.8952 },
+            { name: 'BFS', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 54.5973, endLng: -5.9301 },
+            { name: 'OSL', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 59.9139, endLng: 10.7522 },
+            { name: 'WAW', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 52.2322, endLng: 21.0122 },
+            { name: 'OPO', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 41.1496, endLng: -8.6109 },
+            { name: 'MSQ', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 53.9045, endLng: 27.5615 },
+            { name: 'OTP', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 44.4268, endLng: 26.1025 },
+            { name: 'SVO', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 55.7558, endLng: 37.6173 },
+            { name: 'BTS', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 48.1486, endLng: 17.1077 },
+            { name: 'LJU', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 46.0569, endLng: 14.5058 },
+            { name: 'ARN', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 59.3293, endLng: 18.0686 },
+            { name: 'ZRH', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 47.3769, endLng: 8.5417 },
+            { name: 'LHR', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 51.5099, endLng: -0.118 },
+            { name: 'RUH', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 24.6333, endLng: 46.7167 },
+            { name: 'PEK', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 39.9042, endLng: 116.4074 },
+            { name: 'CGK', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: -6.2088, endLng: 106.8456 },
+            { name: 'THR', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 35.6892, endLng: 51.389 },
+            { name: 'TLV', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 32.0853, endLng: 34.7818 },
+            { name: 'AMM', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 31.9454, endLng: 35.9284 },
+            { name: 'KWI', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 29.3786, endLng: 47.9904 },
+            { name: 'BEY', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 33.8938, endLng: 35.5018 },
+            { name: 'ULN', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 47.9213, endLng: 106.9186 },
+            { name: 'MNL', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 14.5995, endLng: 120.9842 },
+            { name: 'DOH', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 25.2854, endLng: 51.531 },
+            { name: 'JED', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 21.4858, endLng: 39.1925 },
+            { name: 'TPE', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 25.033, endLng: 121.5654 },
+            { name: 'DXB', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 25.2048, endLng: 55.2708 },
+            { name: 'TAS', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: 41.2995, endLng: 69.2401 },
+            { name: 'SYD', color: '#50B6E8', startLat: 38.7223, startLng: -9.1393, endLat: -33.8678, endLng: 151.2073 }
+        ];
+
+        // Coordenadas do ponto de partida comum (Lisboa)
+        const startPoint = [38.7223, -9.1393]; 
+        
+        // Variável global para o mapa e para o grupo de camadas que contém as rotas e marcadores
+        let map;
+        let routeLayerGroup;
+
+        // Função para desenhar uma única rota
+        function drawSingleRoute(route) {
+            const start = [route.startLat, route.startLng];
+            const end = [route.endLat, route.endLng];
+
+            // 1. Cria o ícone de círculo para os pontos finais
+            const endIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color: ${route.color || '#EF4444'}; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white;"></div>`,
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
+            });
+            
+            // 2. Desenha a Polyline (a rota)
+            const polyline = L.polyline([start, end], {
+                color: route.color || '#50B6E8',
+                weight: 2,
+                opacity: route.color.includes('rgba') ? 0.5 : 0.8,
+                dashArray: '5, 5'
+            }).addTo(routeLayerGroup); // Adiciona ao grupo de camadas
+
+            // 3. Adiciona o marcador de destino
+            const marker = L.marker(end, {
+                title: route.name,
+                icon: endIcon
+            }).addTo(routeLayerGroup); // Adiciona ao grupo de camadas
+            
+            // 4. Adiciona um tooltip
+            marker.bindTooltip(route.name, {
+                permanent: false,
+                direction: 'top',
+                offset: [0, -10]
+            });
+        }
+
+        // Função para inicializar o mapa e desenhar todas as rotas
+        function initMap() {
+            // Inicializa o mapa centrado no ponto de partida com um zoom razoável
+            map = L.map('map').setView(startPoint, 3);
+            routeLayerGroup = L.layerGroup().addTo(map); // Cria um grupo para todas as rotas e marcadores
+
+            // Adiciona a camada de mapa (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18,
+            }).addTo(map);
+
+            // Adiciona um marcador especial para o ponto de partida (Lisboa)
+            L.marker(startPoint, {
+                title: 'Ponto de Partida: LIS (38.7223, -9.1393)',
+                opacity: 0.8
+            }).addTo(map)
+              .bindPopup('<span class="font-bold">Partida Principal</span><br>LIS (Lisboa)');
+              
+            // Desenha todas as rotas iniciais
+            flightRoutes.forEach(drawSingleRoute);
+
+            // Ajusta o mapa para mostrar todas as rotas no campo de visão
+            const allPoints = flightRoutes.flatMap(route => [
+                [route.startLat, route.startLng], 
+                [route.endLat, route.endLng]
+            ]);
+            
+            if (allPoints.length > 0) {
+                map.fitBounds(allPoints, { padding: [50, 50] });
+            }
+        }
+
+        // Função para adicionar uma nova rota a partir do formulário
+        function handleAddRoute(event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+
+            const name = document.getElementById('name').value.trim().toUpperCase();
+            const endLat = parseFloat(document.getElementById('endLat').value);
+            const endLng = parseFloat(document.getElementById('endLng').value);
+            const color = document.getElementById('color').value.trim() || '#FFD700';
+
+            const messageBox = document.getElementById('messageBox');
+            messageBox.style.display = 'none';
+
+            // Validação simples
+            if (isNaN(endLat) || isNaN(endLng) || name === '') {
+                messageBox.textContent = 'Por favor, preencha todos os campos com valores válidos.';
+                messageBox.className = 'mt-3 text-center text-sm font-medium rounded-md p-2 bg-red-100 text-red-700';
+                messageBox.style.display = 'block';
+                return;
+            }
+            if (endLat < -90 || endLat > 90 || endLng < -180 || endLng > 180) {
+                 messageBox.textContent = 'Coordenadas inválidas. Latitude deve ser entre -90 e 90, Longitude entre -180 e 180.';
+                messageBox.className = 'mt-3 text-center text-sm font-medium rounded-md p-2 bg-red-100 text-red-700';
+                messageBox.style.display = 'block';
+                return;
+            }
+
+            // Cria o novo objeto de rota
+            const newRoute = {
+                name: name,
+                color: color,
+                startLat: startPoint[0],
+                startLng: startPoint[1],
+                endLat: endLat,
+                endLng: endLng
+            };
+
+            // 1. Adiciona ao array de dados (para fácil atualização se quiser exportar)
+            flightRoutes.push(newRoute);
+
+            // 2. Desenha a nova rota no mapa
+            drawSingleRoute(newRoute);
+
+            // 3. Opcional: Centra o mapa na nova rota
+            map.flyTo([endLat, endLng], 5, { duration: 1.5 });
+
+            // 4. Feedback e limpeza
+            messageBox.textContent = `Rota ${name} adicionada com sucesso!`;
+            messageBox.className = 'mt-3 text-center text-sm font-medium rounded-md p-2 bg-green-100 text-green-700';
+            messageBox.style.display = 'block';
+
+            // Limpa o formulário
+            document.getElementById('addRouteForm').reset();
+            document.getElementById('color').value = '#F97316'; // Reinicia cor para o padrão de novas rotas
+        }
+
+
+        window.onload = function() {
+            initMap();
+            // Adiciona o listener de evento para o formulário
+            document.getElementById('addRouteForm').addEventListener('submit', handleAddRoute);
+        };
+    </script>
+</body>
+</html>
