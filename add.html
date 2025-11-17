@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adicionar Nova Rota</title>
+    <!-- Carregar Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -15,7 +16,8 @@
         .input-group input:focus { border-color: #4f46e5; outline: none; box-shadow: 0 0 0 1px #4f46e5; }
         .btn-primary { background-color: #4f46e5; color: white; padding: 12px 20px; border-radius: 8px; font-weight: 600; transition: background-color 0.2s; }
         .btn-primary:hover { background-color: #4338ca; }
-        .message-box { padding: 12px; margin-top: 16px; border-radius: 6px; font-weight: 500; }
+        .btn-primary:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        .message-box { padding: 12px; margin-top: 16px; border-radius: 6px; font-weight: 500; text-align: center; }
         .success { background-color: #d1fae5; color: #065f46; }
         .error { background-color: #fee2e2; color: #991b1b; }
     </style>
@@ -50,7 +52,6 @@
                 *Lat. e Long. de partida: 38.7223 / -9.1393 (fixos no código)
             </div>
 
-            <!-- O botão está ativo por padrão, pois não há necessidade de autenticação no localStorage -->
             <button type="submit" id="submitButton" class="btn-primary w-full mt-6">Adicionar Rota</button>
 
             <div id="messageBox" class="message-box hidden"></div>
@@ -58,12 +59,12 @@
     </div>
 
     <script>
-        // Chave do localStorage onde as rotas serão guardadas
-        const STORAGE_KEY = 'flight_routes_data';
+        // *** IMPORTANTE: SUBSTITUIR PELO URL DO SEU GOOGLE APPS SCRIPT DEPLOYADO ***
+        const WEB_APP_URL = 'https://script.google.com/macros/s/SEU_URL_DO_WEB_APP/exec';
 
-        // Dados fixos da rota de partida
-        const START_LAT = 38.7223;
-        const START_LNG = -9.1393;
+        // Dados fixos da rota de partida (não são enviados, mas são úteis para referência)
+        const START_LAT = '38.7223';
+        const START_LNG = '-9.1393';
 
         const form = document.getElementById('routeForm');
         const messageBox = document.getElementById('messageBox');
@@ -81,29 +82,40 @@
         }
 
         /**
-         * Carrega as rotas existentes do localStorage.
-         * @returns {Array} - Array de objetos de rota.
+         * Envia os dados do formulário para o Google Apps Script.
+         * @param {Object} data - Dados do formulário.
          */
-        function loadRoutes() {
+        async function sendDataToSheet(data) {
             try {
-                const storedData = localStorage.getItem(STORAGE_KEY);
-                return storedData ? JSON.parse(storedData) : [];
-            } catch (e) {
-                console.error("Erro ao carregar dados do localStorage:", e);
-                return []; // Retorna array vazio em caso de erro
-            }
-        }
+                // Prepara os dados no formato URLSearchParams, que é o que o Apps Script espera
+                const params = new URLSearchParams(data);
 
-        /**
-         * Guarda o array de rotas no localStorage.
-         * @param {Array} routes - Array de rotas a guardar.
-         */
-        function saveRoutes(routes) {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(routes));
-            } catch (e) {
-                console.error("Erro ao guardar dados no localStorage:", e);
-                showMessage('Erro crítico ao guardar dados localmente. O armazenamento pode estar cheio.', 'error');
+                // O modo 'no-cors' é essencial para requisições para o Google Apps Script
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    cache: 'no-cache',
+                    body: params.toString()
+                });
+
+                // Como a resposta no 'no-cors' é opaca, a verificação de erro é limitada,
+                // mas a simples ausência de exceção (network error) geralmente indica sucesso.
+                // Aqui, assumimos sucesso se a requisição de rede passar.
+                if (response.ok || response.type === 'opaque') {
+                    showMessage(`Rota ${data.code} adicionada com sucesso na Google Sheet!`, 'success');
+                    form.reset(); // Limpa o formulário
+                } else {
+                    // Esta branch só é alcançável em CORS mode (que não usamos) ou network failure
+                    throw new Error(`Erro de resposta: ${response.status}`);
+                }
+
+            } catch (error) {
+                console.error("Falha ao enviar dados para a Google Sheet:", error);
+                // Informa o utilizador sobre o erro de script ou rede
+                showMessage(`Erro ao adicionar rota. Verifique o URL do Web App: ${error.message}`, 'error');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Adicionar Rota';
             }
         }
 
@@ -111,47 +123,32 @@
             e.preventDefault();
 
             submitButton.disabled = true;
-            submitButton.textContent = 'A guardar...';
+            submitButton.textContent = 'A guardar na Sheet...';
             messageBox.classList.add('hidden');
 
             // 1. Coleta e sanitização dos dados
             const formData = new FormData(form);
             const data = {
-                id: Date.now(), // ID único baseado no timestamp
+                // Ação para o script distinguir (útil se tivermos mais endpoints)
+                action: "insertRoute", 
                 code: (formData.get('code') || '').toUpperCase().trim(),
                 color: (formData.get('color') || '').trim(),
-                endLat: parseFloat(formData.get('endLat')),
-                endLng: parseFloat(formData.get('endLng')),
-                startLat: START_LAT,
-                startLng: START_LNG,
-                timestamp: new Date().toISOString() // Data e hora de gravação
+                // É crucial enviar os números como strings ou deixar o FormData fazer a serialização
+                endLat: formData.get('endLat'), 
+                endLng: formData.get('endLng'), 
             };
 
             // 2. Validação
-            if (data.code.length !== 3 || isNaN(data.endLat) || isNaN(data.endLng)) {
-                showMessage('Por favor, preencha todos os campos corretamente (Código IATA deve ter 3 letras e coordenadas devem ser números).', 'error');
+            if (data.code.length !== 3 || isNaN(parseFloat(data.endLat)) || isNaN(parseFloat(data.endLng))) {
+                showMessage('Por favor, preencha todos os campos corretamente (Código IATA 3 letras e coordenadas numéricas).', 'error');
                 submitButton.disabled = false;
                 submitButton.textContent = 'Adicionar Rota';
                 return;
             }
 
-            // 3. Adiciona a nova rota
-            try {
-                const routes = loadRoutes();
-                routes.push(data);
-                saveRoutes(routes);
-                
-                showMessage(`Rota ${data.code} adicionada com sucesso ao armazenamento local!`, 'success');
-                form.reset(); // Limpa o formulário
-            } catch (error) {
-                console.error("Erro ao adicionar rota:", error);
-                showMessage(`Erro ao salvar: ${error.message}`, 'error');
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Adicionar Rota';
-            }
+            // 3. Envia os dados
+            sendDataToSheet(data);
         });
-
     </script>
 </body>
 </html>
