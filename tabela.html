@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela de Dados de Rotas</title>
+    <!-- Carregar Tailwind CSS para estilos base e responsividade -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff; /* Fundo branco puro */
+            color: #1f2937;
+            padding: 0; /* Remove padding externo */
+            margin: 0;
+            overflow-x: auto; /* Permite scroll horizontal em dispositivos móveis */
+        }
+        .data-table th, .data-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table th {
+            background-color: #f3f4f6; /* Fundo do cabeçalho levemente cinza */
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #f9fafb; /* Fundo muito claro para linhas pares */
+        }
+        .data-table tr:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="w-full">
+        <!-- A tabela em si -->
+        <div class="overflow-x-auto shadow-md">
+            <table class="min-w-full data-table">
+                <thead>
+                    <tr>
+                        <th>Código IATA</th>
+                        <th>Cor (Hex/RGBA)</th>
+                        <th>Lat. Partida</th>
+                        <th>Long. Partida</th>
+                        <th>Lat. Destino</th>
+                        <th>Long. Destino</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                    <!-- Linhas da tabela serão inseridas aqui pelo JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Dados estruturados
+        const START_LAT = '38.7223';
+        const START_LNG = '-9.1393';
+
+        const rawData = [
+            { code: 'LAD', color: '#50B6E8', endLat: -8.8383, endLng: 13.2344 },
+            { code: 'LBV', color: '#50B6E8', endLat: 0.4162, endLng: 9.4673 },
+            { code: 'TIP', color: '#50B6E8', endLat: 32.8872, endLng: 13.5888 },
+            { code: 'CMN', color: '#50B6E8', endLat: 33.5731, endLng: -7.5898 },
+            { code: 'MPM', color: '#50B6E8', endLat: -25.9653, endLng: 32.5832 },
+            { code: 'TMS', color: '#50B6E8', endLat: 0.3366, endLng: 6.7325 },
+            { code: 'CAI', color: '#50B6E8', endLat: 30.0444, endLng: 31.2357 },
+            { code: 'ABJ', color: '#50B6E8', endLat: 5.36, endLng: -4.0083 },
+            { code: 'RAI', color: 'rgba(255,255,255,0.2)', endLat: 14.9213, endLng: -23.5085 },
+            { code: 'BUE', color: '#50B6E8', endLat: -34.5997, endLng: -58.3819 },
+            { code: 'BSB', color: '#50B6E8', endLat: -15.7939, endLng: -47.8828 },
+            { code: 'YOW', color: '#50B6E8', endLat: 45.4215, endLng: -75.6972 },
+            { code: 'SCL', color: '#50B6E8', endLat: -33.4489, endLng: -70.6693 },
+            { code: 'BOG', color: '#50B6E8', endLat: 4.711, endLng: -74.0721 },
+            { code: 'SDQ', color: '#50B6E8', endLat: 18.4861, endLng: -69.9312 },
+            { code: 'SAL', color: '#50B6E8', endLat: 13.6929, endLng: -89.2182 },
+            { code: 'GUA', color: '#50B6E8', endLat: 14.6349, endLng: -90.5069 },
+            { code: 'TGU', color: '#50B6E8', endLat: 14.0723, endLng: -87.2068 },
+            { code: 'MEX', color: '#50B6E8', endLat: 19.4326, endLng: -99.1332 },
+            { code: 'PTY', color: '#50B6E8', endLat: 8.9824, endLng: -79.5199 },
+            { code: 'LIM', color: '#50B6E8', endLat: -12.0464, endLng: -77.0428 },
+            { code: 'JFK', color: '#50B6E8', endLat: 40.6611, endLng: -73.945 },
+            { code: 'LAX', color: '#50B6E8', endLat: 34.0522, endLng: -118.2437 },
+            { code: 'VIE', color: '#50B6E8', endLat: 48.2084, endLng: 16.3738 },
+            { code: 'BRU', color: '#50B6E8', endLat: 50.8471, endLng: 4.3661 },
+            { code: 'ZAG', color: '#50B6E8', endLat: 45.815, endLng: 15.9819 },
+            { code: 'NIC', color: '#50B6E8', endLat: 35.1856, endLng: 33.3823 },
+            { code: 'PRG', color: '#50B6E8', endLat: 50.0755, endLng: 14.4378 },
+            { code: 'CPH', color: '#50B6E8', endLat: 55.6761, endLng: 12.5683 },
+            { code: 'MAD', color: '#50B6E8', endLat: 40.4169, endLng: -3.7034 },
+            { code: 'TLL', color: '#50B6E8', endLat: 59.4372, endLng: 4.7536 },
+            { code: 'HEL', color: '#50B6E8', endLat: 60.1695, endLng: 24.9355 },
+            { code: 'CDG', color: '#50B6E8', endLat: 48.8567, endLng: 2.3522 },
+            { code: 'BER', color: '#50B6E8', endLat: 52.5167, endLng: 13.3833 },
+            { code: 'ATH', color: '#50B6E8', endLat: 37.9838, endLng: 23.7275 },
+            { code: 'BUD', color: '#50B6E8', endLat: 47.4979, endLng: 19.0402 },
+            { code: 'FCO', color: '#50B6E8', endLat: 41.8933, endLng: 12.4828 },
+            { code: 'VNO', color: '#50B6E8', endLat: 54.6872, endLng: 25.2797 },
+            { code: 'LUX', color: '#50B6E8', endLat: 49.8153, endLng: 6.1296 },
+            { code: 'AMS', color: '#50B6E8', endLat: 52.3702, endLng: 4.8952 },
+            { code: 'BFS', color: '#50B6E8', endLat: 54.5973, endLng: -5.9301 },
+            { code: 'OSL', color: '#50B6E8', endLat: 59.9139, endLng: 10.7522 },
+            { code: 'WAW', color: '#50B6E8', endLat: 52.2322, endLng: 21.0122 },
+            { code: 'OPO', color: '#50B6E8', endLat: 41.1496, endLng: -8.6109 },
+            { code: 'MSQ', color: '#50B6E8', endLat: 53.9045, endLng: 27.5615 },
+            { code: 'OTP', color: '#50B6E8', endLat: 44.4268, endLng: 26.1025 },
+            { code: 'SVO', color: '#50B6E8', endLat: 55.7558, endLng: 37.6173 },
+            { code: 'BTS', color: '#50B6E8', endLat: 48.1486, endLng: 17.1077 },
+            { code: 'LJU', color: '#50B6E8', endLat: 46.0569, endLng: 14.5058 },
+            { code: 'ARN', color: '#50B6E8', endLat: 59.3293, endLng: 18.0686 },
+            { code: 'ZRH', color: '#50B6E8', endLat: 47.3769, endLng: 8.5417 },
+            { code: 'LHR', color: '#50B6E8', endLat: 51.5099, endLng: -0.118 },
+            { code: 'RUH', color: '#50B6E8', endLat: 24.6333, endLng: 46.7167 },
+            { code: 'PEK', color: '#50B6E8', endLat: 39.9042, endLng: 116.4074 },
+            { code: 'CGK', color: '#50B6E8', endLat: -6.2088, endLng: 106.8456 },
+            { code: 'THR', color: '#50B6E8', endLat: 35.6892, endLng: 51.389 },
+            { code: 'TLV', color: '#50B6E8', endLat: 32.0853, endLng: 34.7818 },
+            { code: 'AMM', color: '#50B6E8', endLat: 31.9454, endLng: 35.9284 },
+            { code: 'KWI', color: '#50B6E8', endLat: 29.3786, endLng: 47.9904 },
+            { code: 'BEY', color: '#50B6E8', endLat: 33.8938, endLng: 35.5018 },
+            { code: 'ULN', color: '#50B6E8', endLat: 47.9213, endLng: 106.9186 },
+            { code: 'MNL', color: '#50B6E8', endLat: 14.5995, endLng: 120.9842 },
+            { code: 'DOH', color: '#50B6E8', endLat: 25.2854, endLng: 51.531 },
+            { code: 'JED', color: '#50B6E8', endLat: 21.4858, endLng: 39.1925 },
+            { code: 'TPE', color: '#50B6E8', endLat: 25.033, endLng: 121.5654 },
+            { code: 'DXB', color: '#50B6E8', endLat: 25.2048, endLng: 55.2708 },
+            { code: 'TAS', color: '#50B6E8', endLat: 41.2995, endLng: 69.2401 },
+            { code: 'SYD', color: '#50B6E8', endLat: -33.8678, endLng: 151.2073 }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableBody = document.getElementById('dataTableBody');
+
+            rawData.forEach((data) => {
+                const row = tableBody.insertRow();
+
+                // 1. Código IATA
+                let cellCode = row.insertCell();
+                cellCode.textContent = data.code;
+
+                // 2. Cor
+                let cellColor = row.insertCell();
+                cellColor.textContent = data.color;
+
+                // 3. Lat. Partida (Constante)
+                let cellStartLat = row.insertCell();
+                cellStartLat.textContent = START_LAT;
+
+                // 4. Long. Partida (Constante)
+                let cellStartLng = row.insertCell();
+                cellStartLng.textContent = START_LNG;
+
+                // 5. Lat. Destino
+                let cellEndLat = row.insertCell();
+                cellEndLat.textContent = data.endLat;
+
+                // 6. Long. Destino
+                let cellEndLng = row.insertCell();
+                cellEndLng.textContent = data.endLng;
+            });
+        });
+    </script>
+</body>
+</html>
