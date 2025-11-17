@@ -1,154 +1,66 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adicionar Nova Rota</title>
-    <!-- Carregar Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        /* Estilos base do Tailwind e fonte Inter */
-        body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background-color: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); padding: 32px; width: 100%; max-width: 480px; }
-        .input-group label { font-weight: 500; color: #374151; margin-bottom: 4px; display: block; }
-        .input-group input { border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 14px; width: 100%; transition: border-color 0.2s; }
-        .input-group input:focus { border-color: #4f46e5; outline: none; box-shadow: 0 0 0 1px #4f46e5; }
-        .btn-primary { background-color: #4f46e5; color: white; padding: 12px 20px; border-radius: 8px; font-weight: 600; transition: background-color 0.2s; }
-        .btn-primary:hover { background-color: #4338ca; }
-        .btn-primary:disabled { background-color: #9ca3af; cursor: not-allowed; }
-        .message-box { padding: 12px; margin-top: 16px; border-radius: 6px; font-weight: 500; text-align: center; }
-        .success { background-color: #d1fae5; color: #065f46; }
-        .error { background-color: #fee2e2; color: #991b1b; }
-    </style>
-</head>
-<body>
+const SHEET_ID = '1e7iYEB6OH00aT5hqE6pi6qmafitHq8BNvHt7Fo0wW_8'; // O seu ID de Sheet
+const SHEET_NAME = 'DATA1'; // Ajuste se o nome da sua folha for diferente
 
-    <div class="card">
-        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Adicionar Nova Rota</h1>
-        <form id="routeForm" class="space-y-4">
-            <div class="input-group">
-                <label for="code">Código IATA (3 letras)</label>
-                <input type="text" id="code" name="code" maxlength="3" required placeholder="Ex: GUA">
-            </div>
+/**
+ * Lida com requisições HTTP POST enviadas pelo formulário.
+ * Recebe os dados e anexa uma nova linha à Google Sheet.
+ * * @param {Object} e - Objeto de evento que contém os parâmetros de requisição.
+ * @returns {GoogleAppsScript.Content.TextOutput} Resposta de sucesso.
+ */
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  lock.tryLock(10000); // Tenta bloquear por 10 segundos para evitar escritas simultâneas
 
-            <div class="input-group">
-                <label for="color">Cor (Hex ou RGBA)</label>
-                <input type="text" id="color" name="color" required placeholder="Ex: #50B6E8 ou rgba(255,0,0,0.5)">
-            </div>
+  try {
+    // Abre a folha de cálculo e seleciona a folha
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = ss.getSheetByName(SHEET_NAME);
+    
+    // Verifica se os dados POST existem e se são do tipo 'application/x-www-form-urlencoded'
+    if (e.postData && e.postData.type === "application/x-www-form-urlencoded") {
+      const params = e.parameter;
+      
+      // Validação básica se os campos cruciais estão presentes
+      if (params.code && params.color && params.endLat && params.endLng) {
+        
+        // Os valores são inseridos na ordem das colunas A, B, C, D
+        const newRow = [
+          params.code,      // Coluna A: Código IATA
+          params.color,     // Coluna B: Cor
+          params.endLat,    // Coluna C: Lat. Destino
+          params.endLng,    // Coluna D: Long. Destino
+          // Note: As coordenadas de partida (E e F) não são escritas
+          // pois são constantes e podem ser calculadas/adicionadas à tabela de leitura
+        ];
+        
+        // Anexa a nova linha à folha
+        sheet.appendRow(newRow);
 
-            <div class="flex space-x-4">
-                <div class="input-group flex-1">
-                    <label for="endLat">Lat. Destino</label>
-                    <input type="number" id="endLat" name="endLat" step="any" required placeholder="Ex: 14.6349">
-                </div>
-                <div class="input-group flex-1">
-                    <label for="endLng">Long. Destino</label>
-                    <input type="number" id="endLng" name="endLng" step="any" required placeholder="Ex: -90.5069">
-                </div>
-            </div>
-
-            <div class="text-sm text-gray-500 pt-2">
-                *Lat. e Long. de partida: 38.7223 / -9.1393 (fixos no código)
-            </div>
-
-            <button type="submit" id="submitButton" class="btn-primary w-full mt-6">Adicionar Rota</button>
-
-            <div id="messageBox" class="message-box hidden"></div>
-        </form>
-    </div>
-
-    <script>
-        // *** IMPORTANTE: SUBSTITUIR PELO URL DO SEU GOOGLE APPS SCRIPT DEPLOYADO ***
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby7se_8rEzy74h4QT7p2pnwC5BcmZNCD-oI9ZEV-IA/exec';
-
-        // Dados fixos da rota de partida (não são enviados, mas são úteis para referência)
-        const START_LAT = '38.7223';
-        const START_LNG = '-9.1393';
-
-        const form = document.getElementById('routeForm');
-        const messageBox = document.getElementById('messageBox');
-        const submitButton = document.getElementById('submitButton');
-
-        /**
-         * Mostra uma mensagem na caixa de feedback.
-         * @param {string} text - O texto da mensagem.
-         * @param {string} type - 'success' ou 'error'.
-         */
-        function showMessage(text, type) {
-            messageBox.textContent = text;
-            messageBox.className = `message-box ${type}`;
-            messageBox.classList.remove('hidden');
-        }
-
-        /**
-         * Envia os dados do formulário para o Google Apps Script.
-         * @param {Object} data - Dados do formulário.
-         */
-        async function sendDataToSheet(data) {
-            try {
-                // Prepara os dados no formato URLSearchParams, que é o que o Apps Script espera
-                const params = new URLSearchParams(data);
-
-                // O modo 'no-cors' é essencial para requisições para o Google Apps Script
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    cache: 'no-cache',
-                    body: params.toString()
-                });
-
-                // Como a resposta no 'no-cors' é opaca, a verificação de erro é limitada,
-                // mas a simples ausência de exceção (network error) geralmente indica sucesso.
-                // Aqui, assumimos sucesso se a requisição de rede passar.
-                if (response.ok || response.type === 'opaque') {
-                    showMessage(`Rota ${data.code} adicionada com sucesso na Google Sheet!`, 'success');
-                    form.reset(); // Limpa o formulário
-                } else {
-                    // Esta branch só é alcançável em CORS mode (que não usamos) ou network failure
-                    throw new Error(`Erro de resposta: ${response.status}`);
-                }
-
-            } catch (error) {
-                console.error("Falha ao enviar dados para a Google Sheet:", error);
-                // Informa o utilizador sobre o erro de script ou rede
-                showMessage(`Erro ao adicionar rota. Verifique o URL do Web App: ${error.message}`, 'error');
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Adicionar Rota';
-            }
-        }
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            submitButton.disabled = true;
-            submitButton.textContent = 'A guardar na Sheet...';
-            messageBox.classList.add('hidden');
-
-            // 1. Coleta e sanitização dos dados
-            const formData = new FormData(form);
-            const data = {
-                // Ação para o script distinguir (útil se tivermos mais endpoints)
-                action: "insertRoute", 
-                code: (formData.get('code') || '').toUpperCase().trim(),
-                color: (formData.get('color') || '').trim(),
-                // É crucial enviar os números como strings ou deixar o FormData fazer a serialização
-                endLat: formData.get('endLat'), 
-                endLng: formData.get('endLng'), 
-            };
-
-            // 2. Validação
-            if (data.code.length !== 3 || isNaN(parseFloat(data.endLat)) || isNaN(parseFloat(data.endLng))) {
-                showMessage('Por favor, preencha todos os campos corretamente (Código IATA 3 letras e coordenadas numéricas).', 'error');
-                submitButton.disabled = false;
-                submitButton.textContent = 'Adicionar Rota';
-                return;
-            }
-
-            // 3. Envia os dados
-            sendDataToSheet(data);
-        });
-    </script>
-</body>
-</html>
+        // Retorna uma resposta de sucesso (embora o cliente use 'no-cors' e a ignore)
+        return ContentService
+          .createTextOutput(JSON.stringify({ result: 'success', message: `Rota ${params.code} adicionada.` }))
+          .setMimeType(ContentService.MimeType.JSON);
+          
+      } else {
+        // Retorno de erro se faltarem parâmetros
+        return ContentService
+          .createTextOutput(JSON.stringify({ result: 'error', message: 'Faltam parâmetros obrigatórios.' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    } else {
+      // Retorno de erro se o tipo de requisição não for o esperado
+      return ContentService
+        .createTextOutput(JSON.stringify({ result: 'error', message: 'Requisição inválida (apenas POST permitido).' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (error) {
+    Logger.log("Erro ao processar doPost: " + error.toString());
+    // Retorno de erro em caso de falha de execução do script
+    return ContentService
+      .createTextOutput(JSON.stringify({ result: 'error', message: `Erro interno do Script: ${error.toString()}` }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    // Garante que o lock é liberado
+    lock.releaseLock();
+  }
+}
