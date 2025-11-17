@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adicionar Novo Dado</title>
+    <title>Adicionar Nova Rota</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        /* Estilos base do Tailwind e fonte Inter */
         body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .card { background-color: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); padding: 32px; width: 100%; max-width: 480px; }
         .input-group label { font-weight: 500; color: #374151; margin-bottom: 4px; display: block; }
@@ -49,112 +50,101 @@
                 *Lat. e Long. de partida: 38.7223 / -9.1393 (fixos no código)
             </div>
 
+            <!-- O botão está ativo por padrão, pois não há necessidade de autenticação no localStorage -->
             <button type="submit" id="submitButton" class="btn-primary w-full mt-6">Adicionar Rota</button>
 
             <div id="messageBox" class="message-box hidden"></div>
         </form>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Configurações Globais
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+    <script>
+        // Chave do localStorage onde as rotas serão guardadas
+        const STORAGE_KEY = 'flight_routes_data';
 
         // Dados fixos da rota de partida
         const START_LAT = 38.7223;
         const START_LNG = -9.1393;
 
-        let db, auth;
-        let isAuthReady = false;
-
         const form = document.getElementById('routeForm');
         const messageBox = document.getElementById('messageBox');
         const submitButton = document.getElementById('submitButton');
 
+        /**
+         * Mostra uma mensagem na caixa de feedback.
+         * @param {string} text - O texto da mensagem.
+         * @param {string} type - 'success' ou 'error'.
+         */
         function showMessage(text, type) {
             messageBox.textContent = text;
             messageBox.className = `message-box ${type}`;
             messageBox.classList.remove('hidden');
         }
 
-        // Função de Inicialização do Firebase
-        async function initializeFirebase() {
+        /**
+         * Carrega as rotas existentes do localStorage.
+         * @returns {Array} - Array de objetos de rota.
+         */
+        function loadRoutes() {
             try {
-                // setLogLevel('Debug'); // Ativar logs para debug
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                // Autenticação
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        isAuthReady = true;
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Adicionar Rota';
-                    } else {
-                        isAuthReady = false;
-                        showMessage('Erro de autenticação. Tente novamente.', 'error');
-                    }
-                });
-
-            } catch (error) {
-                console.error("Erro ao inicializar Firebase ou autenticar:", error);
-                showMessage('Erro crítico ao carregar o aplicativo. Verifique o console.', 'error');
-                submitButton.disabled = true;
+                const storedData = localStorage.getItem(STORAGE_KEY);
+                return storedData ? JSON.parse(storedData) : [];
+            } catch (e) {
+                console.error("Erro ao carregar dados do localStorage:", e);
+                return []; // Retorna array vazio em caso de erro
             }
         }
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!isAuthReady) {
-                showMessage('Aguarde a autenticação do sistema.', 'error');
-                return;
+        /**
+         * Guarda o array de rotas no localStorage.
+         * @param {Array} routes - Array de rotas a guardar.
+         */
+        function saveRoutes(routes) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(routes));
+            } catch (e) {
+                console.error("Erro ao guardar dados no localStorage:", e);
+                showMessage('Erro crítico ao guardar dados localmente. O armazenamento pode estar cheio.', 'error');
             }
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
 
             submitButton.disabled = true;
-            submitButton.textContent = 'Enviando...';
+            submitButton.textContent = 'A guardar...';
             messageBox.classList.add('hidden');
 
             // 1. Coleta e sanitização dos dados
             const formData = new FormData(form);
             const data = {
+                id: Date.now(), // ID único baseado no timestamp
                 code: (formData.get('code') || '').toUpperCase().trim(),
                 color: (formData.get('color') || '').trim(),
                 endLat: parseFloat(formData.get('endLat')),
                 endLng: parseFloat(formData.get('endLng')),
                 startLat: START_LAT,
                 startLng: START_LNG,
-                timestamp: serverTimestamp()
+                timestamp: new Date().toISOString() // Data e hora de gravação
             };
 
-            // 2. Validação simples
+            // 2. Validação
             if (data.code.length !== 3 || isNaN(data.endLat) || isNaN(data.endLng)) {
-                showMessage('Por favor, preencha todos os campos corretamente (Código IATA deve ter 3 letras).', 'error');
+                showMessage('Por favor, preencha todos os campos corretamente (Código IATA deve ter 3 letras e coordenadas devem ser números).', 'error');
                 submitButton.disabled = false;
                 submitButton.textContent = 'Adicionar Rota';
                 return;
             }
 
-            // 3. Envio para o Firestore
+            // 3. Adiciona a nova rota
             try {
-                const collectionPath = `/artifacts/${appId}/public/data/routes`;
-                await addDoc(collection(db, collectionPath), data);
+                const routes = loadRoutes();
+                routes.push(data);
+                saveRoutes(routes);
                 
-                showMessage(`Rota ${data.code} adicionada com sucesso!`, 'success');
+                showMessage(`Rota ${data.code} adicionada com sucesso ao armazenamento local!`, 'success');
                 form.reset(); // Limpa o formulário
             } catch (error) {
-                console.error("Erro ao adicionar documento:", error);
+                console.error("Erro ao adicionar rota:", error);
                 showMessage(`Erro ao salvar: ${error.message}`, 'error');
             } finally {
                 submitButton.disabled = false;
@@ -162,8 +152,6 @@
             }
         });
 
-        // Inicia o processo
-        initializeFirebase();
     </script>
 </body>
 </html>
